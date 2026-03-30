@@ -31,11 +31,11 @@ class PanelPanelProvider extends PanelProvider
             ->path('panel')
             ->login()
             ->passwordReset()
-        ->navigationGroups([
-            NavigationGroup::make()
-                 ->label('Usuarios y Roles')
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('Usuarios y Roles'),
 
-        ])
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
