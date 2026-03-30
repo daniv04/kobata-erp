@@ -29,6 +29,7 @@ class PanelPanelProvider extends PanelProvider
             ->id('panel')
             ->path('panel')
             ->login()
+            ->passwordReset()
             ->colors([
                 'primary' => Color::Amber,
             ])
