@@ -32,10 +32,12 @@ class PanelPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->navigationGroups([
+                'Inventario',
                 NavigationGroup::make()
                     ->label('Usuarios y Roles'),
 
             ])
+
             ->colors([
                 'primary' => Color::Amber,
             ])
