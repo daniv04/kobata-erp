@@ -76,7 +76,7 @@ class ViewWarehouse extends ViewRecord
                         ->success()
                         ->send();
 
-                    $this->redirect($this->getUrl());
+                    $this->redirect(static::getUrl(['record' => $this->record->getRouteKey()]));
                 }),
 
             EditAction::make(),

@@ -107,7 +107,7 @@ class ViewTransfer extends ViewRecord
                         ->success()
                         ->send();
 
-                    $this->redirect($this->getUrl());
+                    $this->redirect(static::getUrl(['record' => $this->record->getRouteKey()]));
                 }),
 
             Action::make('receive')
@@ -192,7 +192,7 @@ class ViewTransfer extends ViewRecord
                         ->success()
                         ->send();
 
-                    $this->redirect($this->getUrl());
+                    $this->redirect(static::getUrl(['record' => $this->record->getRouteKey()]));
                 }),
 
             Action::make('cancel')
@@ -226,7 +226,7 @@ class ViewTransfer extends ViewRecord
                         ->warning()
                         ->send();
 
-                    $this->redirect($this->getUrl());
+                    $this->redirect(static::getUrl(['record' => $this->record->getRouteKey()]));
                 }),
         ];
     }
