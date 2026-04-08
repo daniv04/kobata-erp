@@ -9,12 +9,11 @@
 
 | # | Tarea | Commit | Estado |
 |---|-------|--------|--------|
-| 3 | StockService | `feat: add StockService with adjust, reserve and releaseReservation` | ⬜ |
-| 1 | Corregir ProductsResource | `feat: fix and complete ProductsResource with view page` | ⬜ |
-| 2 | WarehouseResource | `feat: add WarehouseResource with list, create, edit and view pages` | ⬜ |
-| 4 | Ajuste manual de stock | `feat: add manual stock adjustment action in ViewWarehouse` | ⬜ |
-| 5 | TransferResource | `feat: add TransferResource with full transfer workflow` | ⬜ |
-| 6 | StockMovementResource | `feat: add StockMovementResource as read-only audit log` | ⬜ |
+| 3 | StockService | `feat: add StockService with adjust, reserve and releaseReservation` | ✅ |
+| 1 | Corregir ProductsResource | `feat: fix and complete ProductsResource with view page` | ✅ |
+| 2 | WarehouseResource + 4 Ajuste stock | `feat: add WarehouseResource with stock adjustment action` | ✅ |
+| 5 | TransferResource | `feat: add TransferResource with full transfer workflow` | ✅ |
+| 6 | StockMovementResource | `feat: add StockMovementResource as read-only audit log` | ✅ |
 
 ---
 
