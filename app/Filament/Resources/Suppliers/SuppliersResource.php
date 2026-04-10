@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Suppliers;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Suppliers\Pages\CreateSuppliers;
 use App\Filament\Resources\Suppliers\Pages\EditSuppliers;
 use App\Filament\Resources\Suppliers\Pages\ListSuppliers;
@@ -11,7 +12,6 @@ use App\Models\Suppliers;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -23,9 +23,9 @@ class SuppliersResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Inventario';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Catalogo;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $recordTitleAttribute = 'name';
 

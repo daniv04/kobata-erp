@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Transfers;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Transfers\Pages\CreateTransfer;
 use App\Filament\Resources\Transfers\Pages\ListTransfers;
 use App\Filament\Resources\Transfers\Pages\ViewTransfer;
@@ -15,7 +16,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -29,9 +29,9 @@ class TransferResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Inventario';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::BodegasInventario;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $recordTitleAttribute = 'reference_number';
 

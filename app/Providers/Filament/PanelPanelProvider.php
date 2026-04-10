@@ -2,12 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Enums\NavigationGroup;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationGroup as FilamentNavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -32,10 +33,13 @@ class PanelPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->navigationGroups([
-                'Inventario',
-                NavigationGroup::make()
-                    ->label('Usuarios y Roles'),
+                FilamentNavigationGroup::make()
+                    ->label(NavigationGroup::Catalogo->getLabel()),
 
+                FilamentNavigationGroup::make()
+                    ->label(NavigationGroup::BodegasInventario->getLabel()),
+                FilamentNavigationGroup::make()
+                    ->label('Usuarios y Roles'),
             ])
 
             ->colors([

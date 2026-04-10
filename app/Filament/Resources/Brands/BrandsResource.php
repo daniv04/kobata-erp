@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Brands;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Brands\Pages\CreateBrands;
 use App\Filament\Resources\Brands\Pages\EditBrands;
 use App\Filament\Resources\Brands\Pages\ListBrands;
@@ -11,7 +12,6 @@ use App\Models\Brands;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -23,9 +23,9 @@ class BrandsResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Inventario';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Catalogo;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $recordTitleAttribute = 'name';
 

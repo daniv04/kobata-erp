@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Transfers\Pages;
 
+use App\Enums\StockMovementType;
 use App\Filament\Resources\Transfers\TransferResource;
 use App\Models\Transfer;
 use App\Services\StockService;
@@ -76,22 +77,22 @@ class ViewTransfer extends ViewRecord
                             $qtyDispatched = (float) $dispatchData['quantity_dispatched'];
                             $item->update(['quantity_dispatched' => $qtyDispatched]);
 
+                            $stockService->releaseReservation(
+                                productId: $item->product_id,
+                                warehouseId: $transfer->from_warehouse_id,
+                                quantity: (float) $item->quantity_requested,
+                            );
+
                             $stockService->adjust(
                                 productId: $item->product_id,
                                 warehouseId: $transfer->from_warehouse_id,
                                 quantity: -$qtyDispatched,
-                                type: 'transfer_out',
+                                type: StockMovementType::TransferOut,
                                 referenceType: 'transfer',
                                 referenceId: $transfer->id,
                                 unitCost: (float) $item->unit_cost,
                                 notes: $item->notes,
                                 userId: auth()->id(),
-                            );
-
-                            $stockService->releaseReservation(
-                                productId: $item->product_id,
-                                warehouseId: $transfer->from_warehouse_id,
-                                quantity: (float) $item->quantity_requested,
                             );
                         }
 
@@ -171,7 +172,7 @@ class ViewTransfer extends ViewRecord
                                 productId: $item->product_id,
                                 warehouseId: $transfer->to_warehouse_id,
                                 quantity: $qtyReceived,
-                                type: 'transfer_in',
+                                type: StockMovementType::TransferIn,
                                 referenceType: 'transfer',
                                 referenceId: $transfer->id,
                                 unitCost: (float) $item->unit_cost,
