@@ -28,11 +28,13 @@ class StockService
         int $userId
     ): StockMovement {
         return DB::transaction(function () use ($productId, $warehouseId, $quantity, $type, $referenceType, $referenceId, $unitCost, $notes, $userId): StockMovement {
-            WarehouseStock::upsert(
-                [['product_id' => $productId, 'warehouse_id' => $warehouseId, 'quantity' => 0, 'reserved_quantity' => 0, 'updated_at' => now()]],
-                uniqueBy: ['product_id', 'warehouse_id'],
-                update: [],
-            );
+           WarehouseStock::insertOrIgnore([
+                'product_id' => $productId,
+                'warehouse_id' => $warehouseId,
+                'quantity' => 0,
+                'reserved_quantity' => 0,
+                'updated_at' => now(),
+            ]);
 
             /** @var WarehouseStock $stock */
             $stock = WarehouseStock::where('product_id', $productId)
