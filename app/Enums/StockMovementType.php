@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Enums;
+use Filament\Support\Contracts\HasLabel;
 
-enum StockMovementType: string
+
+enum StockMovementType: string implements HasLabel
 {
     case Purchase = 'purchase';
     case SaleOut = 'sale_out';
@@ -16,7 +18,7 @@ enum StockMovementType: string
     case SaleReturn = 'sale_return';
     case InitialStock = 'initial_stock';
 
-    public function label(): string
+    public function getLabel(): string
     {
         return match ($this) {
             self::Purchase => 'Recepción de compras',

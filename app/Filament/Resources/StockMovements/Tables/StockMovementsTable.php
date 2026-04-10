@@ -10,6 +10,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Enums\StockMovementType;
 
 class StockMovementsTable
 {
@@ -31,16 +32,7 @@ class StockMovementsTable
                 TextColumn::make('type')
                     ->label('Tipo')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'purchase' => 'Compra',
-                        'transfer_in' => 'Entrada traslado',
-                        'transfer_out' => 'Salida traslado',
-                        'adjustment' => 'Ajuste',
-                        'sale_out' => 'Venta',
-                        'consignment_out' => 'Consignación',
-                        'sale_return' => 'Devolución',
-                        default => $state,
-                    })
+                    ->formatStateUsing(fn (string $state): string => StockMovementType::from($state)->getLabel())
                     ->color(fn (string $state): string => match ($state) {
                         'purchase' => 'success',
                         'transfer_in' => 'info',
@@ -79,15 +71,7 @@ class StockMovementsTable
             ->filters([
                 SelectFilter::make('type')
                     ->label('Tipo')
-                    ->options([
-                        'purchase' => 'Compra',
-                        'transfer_in' => 'Entrada traslado',
-                        'transfer_out' => 'Salida traslado',
-                        'adjustment' => 'Ajuste',
-                        'sale_out' => 'Venta',
-                        'consignment_out' => 'Consignación',
-                        'sale_return' => 'Devolución',
-                    ]),
+                    ->options(StockMovementType::class),
                 SelectFilter::make('warehouse_id')
                     ->label('Bodega')
                     ->options(Warehouse::pluck('name', 'id')),
