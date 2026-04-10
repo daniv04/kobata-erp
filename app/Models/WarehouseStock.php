@@ -11,6 +11,7 @@ class WarehouseStock extends Model
 
     protected $fillable = [
         'product_id',
+        'variant_id',
         'warehouse_id',
         'quantity',
         'reserved_quantity',
@@ -29,6 +30,11 @@ class WarehouseStock extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Products::class);
+    }
+
+    public function variant(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function warehouse(): BelongsTo

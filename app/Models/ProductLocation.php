@@ -10,6 +10,7 @@ class ProductLocation extends Model
     protected $fillable = [
         'warehouse_id',
         'product_id',
+        'variant_id',
         'aisle',
         'shelf',
         'level',
@@ -18,6 +19,11 @@ class ProductLocation extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function variant(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function product(): BelongsTo
