@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\StockMovementType;
 use App\Models\StockMovement;
 use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
@@ -13,14 +14,13 @@ class StockService
      * Apply a stock movement and record it in the audit log.
      *
      * @param  float  $quantity  positive = entrada, negative = salida
-     * @param  string  $type  'adjustment' | 'purchase' | 'transfer_in' | 'transfer_out' | etc.
      * @param  string|null  $referenceType  'transfer' | 'adjustment' | null
      */
     public function adjust(
         int $productId,
         int $warehouseId,
         float $quantity,
-        string $type,
+        StockMovementType $type,
         ?string $referenceType,
         ?int $referenceId,
         float $unitCost,
@@ -42,9 +42,10 @@ class StockService
 
             $quantityBefore = (float) $stock->quantity;
             $quantityAfter = $quantityBefore + $quantity;
+            $availableQuantity = $quantityBefore - (float) $stock->reserved_quantity;
 
-            if ($quantityAfter < 0) {
-                throw new RuntimeException("Stock insuficiente: disponible {$quantityBefore}, solicitado ".abs($quantity));
+            if ($quantity < 0 && ($availableQuantity + $quantity) < 0) {
+                throw new RuntimeException("Stock insuficiente: disponible {$availableQuantity}, solicitado ".abs($quantity));
             }
 
             $stock->quantity = $quantityAfter;
@@ -54,7 +55,7 @@ class StockService
             return StockMovement::create([
                 'product_id' => $productId,
                 'warehouse_id' => $warehouseId,
-                'type' => $type,
+                'type' => $type->value,
                 'quantity' => $quantity,
                 'quantity_before' => $quantityBefore,
                 'quantity_after' => $quantityAfter,
@@ -85,6 +86,12 @@ class StockService
                 ->where('warehouse_id', $warehouseId)
                 ->lockForUpdate()
                 ->first();
+
+            $availableQuantity = (float) $stock->quantity - (float) $stock->reserved_quantity;
+
+            if ($availableQuantity < $quantity) {
+                throw new RuntimeException("Stock insuficiente para reservar: disponible {$availableQuantity}, solicitado {$quantity}");
+            }
 
             $stock->reserved_quantity = (float) $stock->reserved_quantity + $quantity;
             $stock->updated_at = now();
