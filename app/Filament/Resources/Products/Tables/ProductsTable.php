@@ -105,9 +105,24 @@ class ProductsTable
                     ->label('Cargar stock inicial')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->color('success')
-                    ->hidden(fn ($record): bool => StockMovement::where('product_id', $record->id)
-                        ->where('type', StockMovementType::InitialStock->value)
-                        ->exists())
+                    ->hidden(function ($record): bool {
+                        $activeVariants = $record->variants()->where('is_active', true)->pluck('id');
+
+                        if ($activeVariants->isEmpty()) {
+                            return StockMovement::where('product_id', $record->id)
+                                ->where('type', StockMovementType::InitialStock->value)
+                                ->whereNull('variant_id')
+                                ->exists();
+                        }
+
+                        $variantsWithStock = StockMovement::where('product_id', $record->id)
+                            ->where('type', StockMovementType::InitialStock->value)
+                            ->whereIn('variant_id', $activeVariants)
+                            ->distinct('variant_id')
+                            ->count('variant_id');
+
+                        return $variantsWithStock >= $activeVariants->count();
+                    })
                     ->schema(fn ($record) => [
                         Select::make('warehouse_id')
                             ->label('Bodega')
@@ -116,12 +131,19 @@ class ProductsTable
                             ->required(),
                         Select::make('variant_id')
                             ->label('Variante')
-                            ->options(
-                                ProductVariant::where('product_id', $record->id)
+                            ->options(function () use ($record) {
+                                $loadedVariantIds = StockMovement::where('product_id', $record->id)
+                                    ->where('type', StockMovementType::InitialStock->value)
+                                    ->whereNotNull('variant_id')
+                                    ->pluck('variant_id');
+
+                                return ProductVariant::where('product_id', $record->id)
                                     ->where('is_active', true)
-                                    ->pluck('sku', 'id')
-                            )
+                                    ->whereNotIn('id', $loadedVariantIds)
+                                    ->pluck('sku', 'id');
+                            })
                             ->searchable()
+                            ->required()
                             ->visible(fn (): bool => $record->variants()->where('is_active', true)->exists()),
                         TextInput::make('quantity')
                             ->label('Cantidad')
