@@ -2,11 +2,13 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
+use App\Enums\NavigationGroup;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup as FilamentNavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -30,6 +32,16 @@ class PanelPanelProvider extends PanelProvider
             ->path('panel')
             ->login()
             ->passwordReset()
+            ->navigationGroups([
+                FilamentNavigationGroup::make()
+                    ->label(NavigationGroup::Catalogo->getLabel()),
+
+                FilamentNavigationGroup::make()
+                    ->label(NavigationGroup::BodegasInventario->getLabel()),
+                FilamentNavigationGroup::make()
+                    ->label('Usuarios y Roles'),
+            ])
+
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -55,7 +67,8 @@ class PanelPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('Usuarios y Roles'),
             ])
             ->authMiddleware([
                 Authenticate::class,
