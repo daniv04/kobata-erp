@@ -12,6 +12,8 @@ use App\Filament\Resources\Products\Schemas\ProductsForm;
 use App\Filament\Resources\Products\Tables\ProductsTable;
 use App\Models\Products;
 use BackedEnum;
+use Filament\Infolists\Components\KeyValueEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
@@ -101,6 +103,29 @@ class ProductsResource extends Resource
                             ->formatStateUsing(fn (bool $state): string => $state ? 'Activo' : 'Inactivo')
                             ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
                     ]),
+
+                Section::make('Variantes')
+                    ->schema([
+                        RepeatableEntry::make('variants')
+                            ->label('')
+                            ->schema([
+                                TextEntry::make('sku')
+                                    ->label('SKU'),
+                                TextEntry::make('barcode')
+                                    ->label('Código de barras'),
+                                TextEntry::make('is_active')
+                                    ->label('Estado')
+                                    ->badge()
+                                    ->formatStateUsing(fn (bool $state): string => $state ? 'Activa' : 'Inactiva')
+                                    ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
+                                KeyValueEntry::make('attributes')
+                                    ->label('Atributos')
+                                    ->columnSpan(2),
+                            ])
+                            ->columns(3),
+                    ])
+                    ->visible(fn ($record): bool => $record->variants()->exists())
+                    ->collapsible(),
             ]);
     }
 

@@ -36,6 +36,7 @@ class CreatePurchase extends CreateRecord
                 PurchaseItem::create([
                     'purchase_id' => $purchase->id,
                     'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'] ?? null,
                     'quantity' => $item['quantity'],
                     'unit_cost' => $item['unit_cost'],
                     'notes' => $item['notes'] ?? null,

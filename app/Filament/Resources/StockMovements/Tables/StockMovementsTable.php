@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StockMovements\Tables;
 
+use App\Enums\StockMovementType;
 use App\Models\Products;
 use App\Models\Warehouse;
 use Filament\Forms\Components\DatePicker;
@@ -10,7 +11,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Enums\StockMovementType;
 
 class StockMovementsTable
 {
@@ -27,6 +27,9 @@ class StockMovementsTable
                     ->searchable(),
                 TextColumn::make('product.sku')
                     ->label('SKU'),
+                TextColumn::make('variant.sku')
+                    ->label('Variante')
+                    ->placeholder('—'),
                 TextColumn::make('warehouse.name')
                     ->label('Bodega'),
                 TextColumn::make('type')

@@ -29,6 +29,9 @@ class WarehouseStocksRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('warehouse.name')
                     ->label('Bodega'),
+                TextColumn::make('variant.sku')
+                    ->label('Variante')
+                    ->placeholder('Sin variante'),
                 TextColumn::make('quantity')
                     ->label('Cantidad disponible')
                     ->numeric(decimalPlaces: 2),

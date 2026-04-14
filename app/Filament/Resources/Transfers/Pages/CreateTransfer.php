@@ -36,9 +36,12 @@ class CreateTransfer extends CreateRecord
             $stockService = app(StockService::class);
 
             foreach ($items as $item) {
+                $variantId = $item['variant_id'] ?? null;
+
                 TransferItem::create([
                     'transfer_id' => $transfer->id,
                     'product_id' => $item['product_id'],
+                    'variant_id' => $variantId,
                     'quantity_requested' => $item['quantity_requested'],
                     'unit_cost' => $item['unit_cost'],
                     'notes' => $item['notes'] ?? null,
@@ -48,6 +51,7 @@ class CreateTransfer extends CreateRecord
                     productId: (int) $item['product_id'],
                     warehouseId: $transfer->from_warehouse_id,
                     quantity: (float) $item['quantity_requested'],
+                    variantId: $variantId ? (int) $variantId : null,
                 );
             }
 

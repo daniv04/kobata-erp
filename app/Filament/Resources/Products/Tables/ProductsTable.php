@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products\Tables;
 use App\Enums\StockMovementType;
 use App\Models\Brands;
 use App\Models\Categories;
+use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Services\StockService;
@@ -107,12 +108,21 @@ class ProductsTable
                     ->hidden(fn ($record): bool => StockMovement::where('product_id', $record->id)
                         ->where('type', StockMovementType::InitialStock->value)
                         ->exists())
-                    ->schema([
+                    ->schema(fn ($record) => [
                         Select::make('warehouse_id')
                             ->label('Bodega')
                             ->options(Warehouse::where('is_active', true)->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
+                        Select::make('variant_id')
+                            ->label('Variante')
+                            ->options(
+                                ProductVariant::where('product_id', $record->id)
+                                    ->where('is_active', true)
+                                    ->pluck('sku', 'id')
+                            )
+                            ->searchable()
+                            ->visible(fn (): bool => $record->variants()->where('is_active', true)->exists()),
                         TextInput::make('quantity')
                             ->label('Cantidad')
                             ->numeric()
@@ -136,6 +146,7 @@ class ProductsTable
                                 unitCost: 0.0,
                                 notes: $data['notes'] ?? null,
                                 userId: auth()->id(),
+                                variantId: isset($data['variant_id']) ? (int) $data['variant_id'] : null,
                             );
 
                             Notification::make()

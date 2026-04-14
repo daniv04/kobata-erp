@@ -81,6 +81,7 @@ class ViewTransfer extends ViewRecord
                                 productId: $item->product_id,
                                 warehouseId: $transfer->from_warehouse_id,
                                 quantity: (float) $item->quantity_requested,
+                                variantId: $item->variant_id,
                             );
 
                             $stockService->adjust(
@@ -93,6 +94,7 @@ class ViewTransfer extends ViewRecord
                                 unitCost: (float) $item->unit_cost,
                                 notes: $item->notes,
                                 userId: auth()->id(),
+                                variantId: $item->variant_id,
                             );
                         }
 
@@ -178,6 +180,7 @@ class ViewTransfer extends ViewRecord
                                 unitCost: (float) $item->unit_cost,
                                 notes: $item->notes,
                                 userId: auth()->id(),
+                                variantId: $item->variant_id,
                             );
                         }
 
@@ -216,6 +219,7 @@ class ViewTransfer extends ViewRecord
                                 productId: $item->product_id,
                                 warehouseId: $transfer->from_warehouse_id,
                                 quantity: (float) $item->quantity_requested,
+                                variantId: $item->variant_id,
                             );
                         }
 

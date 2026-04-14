@@ -74,6 +74,7 @@ class ViewPurchase extends ViewRecord
                                 unitCost: (float) $item->unit_cost,
                                 notes: $item->notes,
                                 userId: auth()->id(),
+                                variantId: $item->variant_id,
                             );
                         }
 

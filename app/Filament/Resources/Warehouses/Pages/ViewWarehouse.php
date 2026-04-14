@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Warehouses\Pages;
 
+use App\Enums\StockMovementType;
 use App\Filament\Resources\Warehouses\WarehouseResource;
 use App\Models\Products;
+use App\Models\ProductVariant;
 use App\Models\Warehouse;
 use App\Services\StockService;
 use Filament\Actions\Action;
@@ -13,6 +15,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 
 class ViewWarehouse extends ViewRecord
 {
@@ -29,7 +33,30 @@ class ViewWarehouse extends ViewRecord
                         ->label('Producto')
                         ->options(Products::where('is_active', true)->pluck('name', 'id'))
                         ->searchable()
-                        ->required(),
+                        ->required()
+                        ->live()
+                        ->afterStateUpdated(fn (Select $component) => $component
+                            ->getContainer()
+                            ->getComponent('variantFields')
+                            ->getChildSchema()
+                            ->fill()),
+                    Grid::make(1)
+                        ->schema(fn (Get $get): array => $get('product_id')
+                            ? [
+                                Select::make('variant_id')
+                                    ->label('Variante')
+                                    ->options(
+                                        ProductVariant::where('product_id', $get('product_id'))
+                                            ->where('is_active', true)
+                                            ->pluck('sku', 'id')
+                                    )
+                                    ->searchable()
+                                    ->visible(fn () => ProductVariant::where('product_id', $get('product_id'))
+                                        ->where('is_active', true)
+                                        ->exists()),
+                            ]
+                            : [])
+                        ->key('variantFields'),
                     Select::make('movement_type')
                         ->label('Tipo de movimiento')
                         ->options([
@@ -62,12 +89,13 @@ class ViewWarehouse extends ViewRecord
                         productId: (int) $data['product_id'],
                         warehouseId: $record->id,
                         quantity: $quantity,
-                        type: 'adjustment',
+                        type: StockMovementType::Adjustment,
                         referenceType: null,
                         referenceId: null,
                         unitCost: (float) $data['unit_cost'],
                         notes: $data['notes'],
                         userId: auth()->id(),
+                        variantId: isset($data['variant_id']) ? (int) $data['variant_id'] : null,
                     );
 
                     Notification::make()
