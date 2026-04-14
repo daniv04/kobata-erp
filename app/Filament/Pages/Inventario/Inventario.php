@@ -109,11 +109,6 @@ class Inventario extends Page implements HasTable
                             ->minValue(0.01)
                             ->required(),
 
-                        TextInput::make('costo_unitario')
-                            ->label('Costo unitario (₡)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(0),
 
                         Textarea::make('notas')
                             ->label('Notas')
@@ -136,7 +131,6 @@ class Inventario extends Page implements HasTable
                                 type: StockMovementType::Adjustment,
                                 referenceType: 'adjustment',
                                 referenceId: null,
-                                unitCost: (float) $data['costo_unitario'],
                                 notes: $data['notas'] ?? null,
                                 userId: auth()->id(),
                             );
