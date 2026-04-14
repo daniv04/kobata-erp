@@ -64,7 +64,7 @@ class PurchaseForm
                                                 ->options(
                                                     ProductVariant::where('product_id', $get('product_id'))
                                                         ->where('is_active', true)
-                                                        ->pluck('sku', 'id')
+                                                        ->pluck('name', 'id')
                                                 )
                                                 ->searchable(),
                                         ]

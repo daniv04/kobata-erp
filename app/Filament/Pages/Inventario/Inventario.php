@@ -3,11 +3,14 @@
 namespace App\Filament\Pages\Inventario;
 
 use App\Enums\NavigationGroup;
+use App\Enums\StockMovementType;
 use App\Models\WarehouseStock;
+use App\Services\StockService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -16,9 +19,6 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use UnitEnum;
-use App\Services\StockService;
-use App\Enums\StockMovementType;
-use Filament\Notifications\Notification;
 
 class Inventario extends Page implements HasTable
 {
@@ -38,7 +38,7 @@ class Inventario extends Page implements HasTable
     {
         return $table
             ->query(
-                WarehouseStock::query()->with(['product.category', 'warehouse'])
+                WarehouseStock::query()->with(['product.category', 'warehouse', 'variant'])
             )
             ->columns([
                 TextColumn::make('product.sku')
@@ -50,6 +50,11 @@ class Inventario extends Page implements HasTable
                     ->label('Producto')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('variant.name')
+                    ->label('Variante')
+                    ->searchable()
+                    ->sortable(),
+                       
 
                 TextColumn::make('product.category.name')
                     ->label('Categoría')
@@ -114,7 +119,7 @@ class Inventario extends Page implements HasTable
                             ->label('Notas')
                             ->rows(2)
                             ->required(),
-                            
+
                     ])
                     ->action(function (WarehouseStock $record, array $data, StockService $stockService): void {
                         $cantidad = (float) $data['cantidad'];
@@ -149,7 +154,6 @@ class Inventario extends Page implements HasTable
                                 ->send();
                         }
                     }),
-                    
 
             ])
             ->defaultSort('product.name');

@@ -109,6 +109,8 @@ class ProductsResource extends Resource
                         RepeatableEntry::make('variants')
                             ->label('')
                             ->schema([
+                                TextEntry::make('name')
+                                    ->label('Nombre'),
                                 TextEntry::make('sku')
                                     ->label('SKU'),
                                 TextEntry::make('barcode')

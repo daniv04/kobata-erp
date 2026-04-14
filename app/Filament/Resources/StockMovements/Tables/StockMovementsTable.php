@@ -27,7 +27,7 @@ class StockMovementsTable
                     ->searchable(),
                 TextColumn::make('product.sku')
                     ->label('SKU'),
-                TextColumn::make('variant.sku')
+                TextColumn::make('variant.name')
                     ->label('Variante')
                     ->placeholder('—'),
                 TextColumn::make('warehouse.name')

@@ -114,6 +114,10 @@ class ProductsForm
                             ->relationship()
                             ->label('Variantes del producto')
                             ->schema([
+                                TextInput::make('name')
+                                    ->label('Nombre')
+                                    ->required()
+                                    ->placeholder('Ej: Tanque Rojo'),
                                 TextInput::make('sku')
                                     ->label('SKU variante')
                                     ->required()

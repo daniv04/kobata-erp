@@ -140,7 +140,7 @@ class ProductsTable
                                 return ProductVariant::where('product_id', $record->id)
                                     ->where('is_active', true)
                                     ->whereNotIn('id', $loadedVariantIds)
-                                    ->pluck('sku', 'id');
+                                    ->pluck('name', 'id');
                             })
                             ->searchable()
                             ->required()
