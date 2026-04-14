@@ -23,11 +23,12 @@ class StockService
         StockMovementType $type,
         ?string $referenceType,
         ?int $referenceId,
+        float $unitCost,
         ?string $notes,
         int $userId,
         ?int $variantId = null,
     ): StockMovement {
-        return DB::transaction(function () use ($productId, $warehouseId, $quantity, $type, $referenceType, $referenceId, $notes, $userId, $variantId): StockMovement {
+        return DB::transaction(function () use ($productId, $warehouseId, $quantity, $type, $referenceType, $referenceId, $unitCost, $notes, $userId, $variantId): StockMovement {
             /** @var WarehouseStock $stock */
             $stock = WarehouseStock::lockForUpdate()
                 ->firstOrCreate(
@@ -63,6 +64,7 @@ class StockService
                 'quantity' => $quantity,
                 'quantity_before' => $quantityBefore,
                 'quantity_after' => $quantityAfter,
+                'unit_cost' => $unitCost,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
                 'notes' => $notes,

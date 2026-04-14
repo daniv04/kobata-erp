@@ -54,7 +54,6 @@ class Inventario extends Page implements HasTable
                     ->label('Variante')
                     ->searchable()
                     ->sortable(),
-                       
 
                 TextColumn::make('product.category.name')
                     ->label('Categoría')
@@ -109,7 +108,6 @@ class Inventario extends Page implements HasTable
                             ->minValue(0.01)
                             ->required(),
 
-
                         Textarea::make('notas')
                             ->label('Notas')
                             ->rows(2)
@@ -131,8 +129,10 @@ class Inventario extends Page implements HasTable
                                 type: StockMovementType::Adjustment,
                                 referenceType: 'adjustment',
                                 referenceId: null,
+                                unitCost: 0.0,
                                 notes: $data['notas'] ?? null,
                                 userId: auth()->id(),
+                                variantId: $record->variant_id,
                             );
 
                             Notification::make()
