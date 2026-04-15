@@ -107,6 +107,30 @@ class ProductsTable
                     ->label('Cargar stock inicial')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->color('success')
+                    ->hidden(function ($record): bool {
+                        $activeWarehouseCount = Warehouse::where('is_active', true)->count();
+                        $activeVariants = $record->variants()->where('is_active', true)->pluck('id');
+
+                        if ($activeVariants->isEmpty()) {
+                            $loadedWarehouseCount = StockMovement::where('product_id', $record->id)
+                                ->where('type', StockMovementType::InitialStock->value)
+                                ->whereNull('variant_id')
+                                ->distinct('warehouse_id')
+                                ->count('warehouse_id');
+
+                            return $loadedWarehouseCount >= $activeWarehouseCount;
+                        }
+
+                        $totalCombinations = $activeWarehouseCount * $activeVariants->count();
+
+                        $loadedCombinations = StockMovement::where('product_id', $record->id)
+                            ->where('type', StockMovementType::InitialStock->value)
+                            ->whereIn('variant_id', $activeVariants)
+                            ->selectRaw('count(distinct (warehouse_id, variant_id)) as aggregate')
+                            ->value('aggregate');
+
+                        return $loadedCombinations >= $totalCombinations;
+                    })
                     ->schema(fn ($record) => [
                         Select::make('warehouse_id')
                             ->label('Bodega')
