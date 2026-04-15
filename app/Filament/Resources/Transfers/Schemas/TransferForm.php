@@ -71,7 +71,7 @@ class TransferForm
                                                     ProductVariant::where('product_id', $get('product_id'))
                                                         ->where('is_active', true)
                                                         ->get()
-                                                        ->mapWithKeys(fn (ProductVariant $v) => [$v->id => $v->name ?? $v->sku])
+                                                        ->mapWithKeys(fn (ProductVariant $v) => [$v->id => $v->name ?? $v->sku ?? "Variante #{$v->id}"])
                                                 )
                                                 ->searchable()
                                                 ->required(),
