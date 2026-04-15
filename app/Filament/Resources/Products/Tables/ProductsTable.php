@@ -135,10 +135,21 @@ class ProductsTable
                         Select::make('warehouse_id')
                             ->label('Bodega')
                             ->options(function () use ($record) {
-                                $loadedWarehouseIds = StockMovement::where('product_id', $record->id)
-                                    ->where('type', StockMovementType::InitialStock->value)
-                                    ->whereNull('variant_id')
-                                    ->pluck('warehouse_id');
+                                $activeVariants = $record->variants()->where('is_active', true)->pluck('id');
+
+                                if ($activeVariants->isEmpty()) {
+                                    $loadedWarehouseIds = StockMovement::where('product_id', $record->id)
+                                        ->where('type', StockMovementType::InitialStock->value)
+                                        ->whereNull('variant_id')
+                                        ->pluck('warehouse_id');
+                                } else {
+                                    $loadedWarehouseIds = StockMovement::where('product_id', $record->id)
+                                        ->where('type', StockMovementType::InitialStock->value)
+                                        ->whereIn('variant_id', $activeVariants)
+                                        ->groupBy('warehouse_id')
+                                        ->havingRaw('count(distinct variant_id) >= ?', [$activeVariants->count()])
+                                        ->pluck('warehouse_id');
+                                }
 
                                 return Warehouse::where('is_active', true)
                                     ->whereNotIn('id', $loadedWarehouseIds)
