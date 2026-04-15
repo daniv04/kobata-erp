@@ -110,7 +110,16 @@ class ProductsTable
                     ->schema(fn ($record) => [
                         Select::make('warehouse_id')
                             ->label('Bodega')
-                            ->options(Warehouse::where('is_active', true)->pluck('name', 'id'))
+                            ->options(function () use ($record) {
+                                $loadedWarehouseIds = StockMovement::where('product_id', $record->id)
+                                    ->where('type', StockMovementType::InitialStock->value)
+                                    ->whereNull('variant_id')
+                                    ->pluck('warehouse_id');
+
+                                return Warehouse::where('is_active', true)
+                                    ->whereNotIn('id', $loadedWarehouseIds)
+                                    ->pluck('name', 'id');
+                            })
                             ->searchable()
                             ->required()
                             ->live()
