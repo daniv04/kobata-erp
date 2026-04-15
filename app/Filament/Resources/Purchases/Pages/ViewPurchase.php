@@ -8,6 +8,7 @@ use App\Filament\Resources\Purchases\PurchaseResource;
 use App\Models\Purchase;
 use App\Services\StockService;
 use Filament\Actions\Action;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -21,6 +22,9 @@ class ViewPurchase extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            EditAction::make()
+                ->visible(fn (): bool => $this->record->status === PurchaseStatus::Pending),
+
             Action::make('receive')
                 ->label('Confirmar recepción')
                 ->icon('heroicon-o-check-circle')

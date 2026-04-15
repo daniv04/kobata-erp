@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Purchases\Tables;
 
 use App\Enums\PurchaseStatus;
+use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -48,6 +49,8 @@ class PurchasesTable
             ->defaultSort('created_at', 'desc')
             ->recordActions([
                 ViewAction::make(),
+                EditAction::make()
+                    ->visible(fn ($record): bool => $record->status === PurchaseStatus::Pending),
             ]);
     }
 }

@@ -21,7 +21,7 @@ class CreatePurchase extends CreateRecord
         return DB::transaction(function () use ($data, $items): Purchase {
             $year = now()->year;
             $count = Purchase::whereYear('created_at', $year)->count() + 1;
-            $referenceNumber = 'PUR-'.$year.'-'.str_pad((string) $count, 4, '0', STR_PAD_LEFT);
+            $referenceNumber = 'COMPRA-'.$year.'-'.str_pad((string) $count, 4, '0', STR_PAD_LEFT);
 
             /** @var Purchase $purchase */
             $purchase = Purchase::create([
