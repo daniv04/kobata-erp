@@ -31,6 +31,7 @@ class ViewPurchase extends ViewRecord
                         'receive_items' => $this->record->items->map(fn ($item) => [
                             'purchase_item_id' => $item->id,
                             'product_name' => $item->product->name,
+                            'variant_name' => $item->variant?->name,
                             'quantity' => $item->quantity,
                         ])->toArray(),
                     ];
@@ -42,12 +43,16 @@ class ViewPurchase extends ViewRecord
                             TextInput::make('product_name')
                                 ->label('Producto')
                                 ->disabled(),
+                            TextInput::make('variant_name')
+                                ->label('Variante')
+                                ->disabled()
+                                ->placeholder('—'),
                             TextInput::make('quantity')
                                 ->label('Cantidad')
                                 ->disabled()
                                 ->numeric(),
                         ])
-                        ->columns(2)
+                        ->columns(3)
                         ->addable(false)
                         ->deletable(false)
                         ->reorderable(false),
