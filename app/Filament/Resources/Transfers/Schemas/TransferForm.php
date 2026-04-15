@@ -70,9 +70,11 @@ class TransferForm
                                                 ->options(
                                                     ProductVariant::where('product_id', $get('product_id'))
                                                         ->where('is_active', true)
-                                                        ->pluck('name', 'id')
+                                                        ->get()
+                                                        ->mapWithKeys(fn (ProductVariant $v) => [$v->id => $v->name ?? $v->sku])
                                                 )
-                                                ->searchable(),
+                                                ->searchable()
+                                                ->required(),
                                         ]
                                         : [])
                                     ->key('transferVariantField'),

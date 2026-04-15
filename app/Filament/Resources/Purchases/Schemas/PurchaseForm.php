@@ -22,6 +22,7 @@ class PurchaseForm
         return $schema
             ->components([
                 Section::make('Información de la compra')
+                
                     ->schema([
                         Select::make('supplier_id')
                             ->label('Proveedor')
@@ -64,9 +65,11 @@ class PurchaseForm
                                                 ->options(
                                                     ProductVariant::where('product_id', $get('product_id'))
                                                         ->where('is_active', true)
-                                                        ->pluck('name', 'id')
+                                                        ->get()
+                                                        ->mapWithKeys(fn (ProductVariant $v) => [$v->id => $v->name ?? $v->sku])
                                                 )
-                                                ->searchable(),
+                                                ->searchable()
+                                                ->required(),
                                         ]
                                         : [])
                                     ->key('purchaseVariantField'),
