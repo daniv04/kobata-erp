@@ -19,8 +19,10 @@ class TransferForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('Información del traslado')
+                    ->aside()
                     ->schema([
                         Select::make('from_warehouse_id')
                             ->label('Bodega origen')
