@@ -25,22 +25,24 @@ class StockService
         ?int $referenceId,
         float $unitCost,
         ?string $notes,
-        int $userId
+        int $userId,
+        ?int $variantId = null,
     ): StockMovement {
-        return DB::transaction(function () use ($productId, $warehouseId, $quantity, $type, $referenceType, $referenceId, $unitCost, $notes, $userId): StockMovement {
-           WarehouseStock::insertOrIgnore([
-                'product_id' => $productId,
-                'warehouse_id' => $warehouseId,
-                'quantity' => 0,
-                'reserved_quantity' => 0,
-                'updated_at' => now(),
-            ]);
-
+        return DB::transaction(function () use ($productId, $warehouseId, $quantity, $type, $referenceType, $referenceId, $unitCost, $notes, $userId, $variantId): StockMovement {
             /** @var WarehouseStock $stock */
-            $stock = WarehouseStock::where('product_id', $productId)
-                ->where('warehouse_id', $warehouseId)
-                ->lockForUpdate()
-                ->first();
+            $stock = WarehouseStock::lockForUpdate()
+                ->firstOrCreate(
+                    [
+                        'product_id' => $productId,
+                        'variant_id' => $variantId,
+                        'warehouse_id' => $warehouseId,
+                    ],
+                    [
+                        'quantity' => 0,
+                        'reserved_quantity' => 0,
+                        'updated_at' => now(),
+                    ],
+                );
 
             $quantityBefore = (float) $stock->quantity;
             $quantityAfter = $quantityBefore + $quantity;
@@ -56,6 +58,7 @@ class StockService
 
             return StockMovement::create([
                 'product_id' => $productId,
+                'variant_id' => $variantId,
                 'warehouse_id' => $warehouseId,
                 'type' => $type->value,
                 'quantity' => $quantity,
@@ -74,20 +77,23 @@ class StockService
     /**
      * Increment the reserved quantity for a product in a warehouse.
      */
-    public function reserve(int $productId, int $warehouseId, float $quantity): void
+    public function reserve(int $productId, int $warehouseId, float $quantity, ?int $variantId = null): void
     {
-        DB::transaction(function () use ($productId, $warehouseId, $quantity): void {
-            WarehouseStock::upsert(
-                [['product_id' => $productId, 'warehouse_id' => $warehouseId, 'quantity' => 0, 'reserved_quantity' => 0, 'updated_at' => now()]],
-                uniqueBy: ['product_id', 'warehouse_id'],
-                update: [],
-            );
-
+        DB::transaction(function () use ($productId, $warehouseId, $quantity, $variantId): void {
             /** @var WarehouseStock $stock */
-            $stock = WarehouseStock::where('product_id', $productId)
-                ->where('warehouse_id', $warehouseId)
-                ->lockForUpdate()
-                ->first();
+            $stock = WarehouseStock::lockForUpdate()
+                ->firstOrCreate(
+                    [
+                        'product_id' => $productId,
+                        'variant_id' => $variantId,
+                        'warehouse_id' => $warehouseId,
+                    ],
+                    [
+                        'quantity' => 0,
+                        'reserved_quantity' => 0,
+                        'updated_at' => now(),
+                    ],
+                );
 
             $availableQuantity = (float) $stock->quantity - (float) $stock->reserved_quantity;
 
@@ -104,20 +110,23 @@ class StockService
     /**
      * Decrement the reserved quantity for a product in a warehouse.
      */
-    public function releaseReservation(int $productId, int $warehouseId, float $quantity): void
+    public function releaseReservation(int $productId, int $warehouseId, float $quantity, ?int $variantId = null): void
     {
-        DB::transaction(function () use ($productId, $warehouseId, $quantity): void {
-            WarehouseStock::upsert(
-                [['product_id' => $productId, 'warehouse_id' => $warehouseId, 'quantity' => 0, 'reserved_quantity' => 0, 'updated_at' => now()]],
-                uniqueBy: ['product_id', 'warehouse_id'],
-                update: [],
-            );
-
+        DB::transaction(function () use ($productId, $warehouseId, $quantity, $variantId): void {
             /** @var WarehouseStock $stock */
-            $stock = WarehouseStock::where('product_id', $productId)
-                ->where('warehouse_id', $warehouseId)
-                ->lockForUpdate()
-                ->first();
+            $stock = WarehouseStock::lockForUpdate()
+                ->firstOrCreate(
+                    [
+                        'product_id' => $productId,
+                        'variant_id' => $variantId,
+                        'warehouse_id' => $warehouseId,
+                    ],
+                    [
+                        'quantity' => 0,
+                        'reserved_quantity' => 0,
+                        'updated_at' => now(),
+                    ],
+                );
 
             $newReserved = (float) $stock->reserved_quantity - $quantity;
 

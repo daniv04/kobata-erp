@@ -45,6 +45,16 @@ class Products extends Model
         return $this->belongsTo(Suppliers::class, 'supplier_id');
     }
 
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+
+    public function hasVariants(): bool
+    {
+        return $this->variants()->exists();
+    }
+
     public function warehouseStocks(): HasMany
     {
         return $this->hasMany(WarehouseStock::class, 'product_id');

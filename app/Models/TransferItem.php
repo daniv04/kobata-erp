@@ -10,6 +10,7 @@ class TransferItem extends Model
     protected $fillable = [
         'transfer_id',
         'product_id',
+        'variant_id',
         'quantity_requested',
         'quantity_dispatched',
         'quantity_received',
@@ -30,6 +31,11 @@ class TransferItem extends Model
     public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
+    }
+
+    public function variant(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function product(): BelongsTo

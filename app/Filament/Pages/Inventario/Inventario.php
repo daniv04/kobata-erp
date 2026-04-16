@@ -3,25 +3,30 @@
 namespace App\Filament\Pages\Inventario;
 
 use App\Enums\NavigationGroup;
+use App\Enums\StockMovementType;
+use App\Models\Warehouse;
 use App\Models\WarehouseStock;
+use App\Services\StockService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Resources\Concerns\HasTabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
-use App\Services\StockService;
-use App\Enums\StockMovementType;
-use Filament\Notifications\Notification;
 
 class Inventario extends Page implements HasTable
 {
+    use HasTabs;
     use InteractsWithTable;
 
     protected string $view = 'filament.pages.inventario.inventario';
@@ -34,12 +39,31 @@ class Inventario extends Page implements HasTable
 
     protected static ?int $navigationSort = 2;
 
+    public function mount(): void
+    {
+        $this->loadDefaultActiveTab();
+    }
+
+    public function getTabs(): array
+    {
+        $tabs = [
+            'todas' => Tab::make('Todas'),
+        ];
+
+        foreach (Warehouse::where('is_active', true)->get() as $warehouse) {
+            $tabs["warehouse_{$warehouse->id}"] = Tab::make($warehouse->name)
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('warehouse_id', $warehouse->id));
+        }
+
+        return $tabs;
+    }
+
     public function table(Table $table): Table
     {
         return $table
-            ->query(
-                WarehouseStock::query()->with(['product.category', 'warehouse'])
-            )
+            ->query(fn () => $this->modifyQueryWithActiveTab(
+                WarehouseStock::query()->with(['product.category', 'warehouse', 'variant'])
+            ))
             ->columns([
                 TextColumn::make('product.sku')
                     ->label('SKU')
@@ -48,6 +72,10 @@ class Inventario extends Page implements HasTable
 
                 TextColumn::make('product.name')
                     ->label('Producto')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('variant.name')
+                    ->label('Variante')
                     ->searchable()
                     ->sortable(),
 
@@ -75,15 +103,10 @@ class Inventario extends Page implements HasTable
                     ->color(fn (float $state): string => $state <= 0 ? 'danger' : 'success'),
             ])
             ->filters([
-                SelectFilter::make('warehouse_id')
-                    ->label('Bodega')
-                    ->relationship('warehouse', 'name'),
-
                 SelectFilter::make('product.category_id')
                     ->label('Categoría')
                     ->relationship('product.category', 'name'),
-            ]
-            )
+            ])
             ->recordActions([
                 Action::make('ajustar')
                     ->label('Ajustar Stock')
@@ -104,17 +127,11 @@ class Inventario extends Page implements HasTable
                             ->minValue(0.01)
                             ->required(),
 
-                        TextInput::make('costo_unitario')
-                            ->label('Costo unitario (₡)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(0),
-
                         Textarea::make('notas')
                             ->label('Notas')
                             ->rows(2)
                             ->required(),
-                            
+
                     ])
                     ->action(function (WarehouseStock $record, array $data, StockService $stockService): void {
                         $cantidad = (float) $data['cantidad'];
@@ -131,9 +148,10 @@ class Inventario extends Page implements HasTable
                                 type: StockMovementType::Adjustment,
                                 referenceType: 'adjustment',
                                 referenceId: null,
-                                unitCost: (float) $data['costo_unitario'],
+                                unitCost: 0.0,
                                 notes: $data['notas'] ?? null,
                                 userId: auth()->id(),
+                                variantId: $record->variant_id,
                             );
 
                             Notification::make()
@@ -149,7 +167,6 @@ class Inventario extends Page implements HasTable
                                 ->send();
                         }
                     }),
-                    
 
             ])
             ->defaultSort('product.name');

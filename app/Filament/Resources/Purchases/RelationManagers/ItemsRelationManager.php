@@ -30,6 +30,9 @@ class ItemsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('product.name')
                     ->label('Producto'),
+                TextColumn::make('variant.name')
+                    ->label('Variante')
+                    ->placeholder('—'),
                 TextColumn::make('quantity')
                     ->label('Cantidad')
                     ->numeric(decimalPlaces: 2),

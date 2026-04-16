@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products\Schemas;
 use App\Models\Brands;
 use App\Models\Categories;
 use App\Models\Suppliers;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -106,6 +107,39 @@ class ProductsForm
                             ->label('Activo')
                             ->default(true),
                     ]),
+
+                Section::make('Variantes')
+                    ->schema([
+                        Repeater::make('variants')
+                            ->relationship()
+                            ->label('Variantes del producto')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Nombre')
+                                    ->required()
+                                    ->placeholder('Ej: Tanque Rojo'),
+                                TextInput::make('sku')
+                                    ->label('SKU variante')
+                                    ->required()
+                                    ->unique('product_variants', 'sku', ignoreRecord: true),
+                                TextInput::make('barcode')
+                                    ->label('Código de barras'),
+                                KeyValue::make('attributes')
+                                    ->label('Atributos')
+                                    ->keyLabel('Atributo')
+                                    ->valueLabel('Valor')
+                                    ->addActionLabel('Agregar atributo')
+                                    ->columnSpan(2),
+                                Toggle::make('is_active')
+                                    ->label('Activa')
+                                    ->default(true),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0)
+                            ->addActionLabel('Agregar variante')
+                            ->collapsible(),
+                    ])
+                    ->collapsible(),
 
                 Section::make('Compatibilidad de vehículo')
                     ->schema([

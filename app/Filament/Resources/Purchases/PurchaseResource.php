@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Purchases;
 
 use App\Enums\NavigationGroup;
 use App\Filament\Resources\Purchases\Pages\CreatePurchase;
+use App\Filament\Resources\Purchases\Pages\EditPurchase;
 use App\Filament\Resources\Purchases\Pages\ListPurchases;
 use App\Filament\Resources\Purchases\Pages\ViewPurchase;
 use App\Filament\Resources\Purchases\RelationManagers\ItemsRelationManager;
@@ -25,7 +26,7 @@ class PurchaseResource extends Resource
 
     protected static ?string $pluralLabel = 'Compras';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 4;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::BodegasInventario;
 
@@ -60,6 +61,7 @@ class PurchaseResource extends Resource
         return [
             'index' => ListPurchases::route('/'),
             'create' => CreatePurchase::route('/create'),
+            'edit' => EditPurchase::route('/{record}/edit'),
             'view' => ViewPurchase::route('/{record}'),
         ];
     }

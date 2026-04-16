@@ -29,6 +29,9 @@ class ItemsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('product.name')
                     ->label('Producto'),
+                TextColumn::make('variant.name')
+                    ->label('Variante')
+                    ->placeholder('—'),
                 TextColumn::make('quantity_requested')
                     ->label('Cantidad solicitada')
                     ->numeric(decimalPlaces: 2),

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products\Tables;
 use App\Enums\StockMovementType;
 use App\Models\Brands;
 use App\Models\Categories;
+use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Services\StockService;
@@ -15,6 +16,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -104,15 +107,85 @@ class ProductsTable
                     ->label('Cargar stock inicial')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->color('success')
-                    ->hidden(fn ($record): bool => StockMovement::where('product_id', $record->id)
-                        ->where('type', StockMovementType::InitialStock->value)
-                        ->exists())
-                    ->schema([
+                    ->hidden(function ($record): bool {
+                        $activeWarehouseCount = Warehouse::where('is_active', true)->count();
+                        $activeVariants = $record->variants()->where('is_active', true)->pluck('id');
+
+                        if ($activeVariants->isEmpty()) {
+                            $loadedWarehouseCount = StockMovement::where('product_id', $record->id)
+                                ->where('type', StockMovementType::InitialStock->value)
+                                ->whereNull('variant_id')
+                                ->distinct('warehouse_id')
+                                ->count('warehouse_id');
+
+                            return $loadedWarehouseCount >= $activeWarehouseCount;
+                        }
+
+                        $totalCombinations = $activeWarehouseCount * $activeVariants->count();
+
+                        $loadedCombinations = StockMovement::where('product_id', $record->id)
+                            ->where('type', StockMovementType::InitialStock->value)
+                            ->whereIn('variant_id', $activeVariants)
+                            ->selectRaw('count(distinct (warehouse_id, variant_id)) as aggregate')
+                            ->value('aggregate');
+
+                        return $loadedCombinations >= $totalCombinations;
+                    })
+                    ->schema(fn ($record) => [
                         Select::make('warehouse_id')
                             ->label('Bodega')
-                            ->options(Warehouse::where('is_active', true)->pluck('name', 'id'))
+                            ->options(function () use ($record) {
+                                $activeVariants = $record->variants()->where('is_active', true)->pluck('id');
+
+                                if ($activeVariants->isEmpty()) {
+                                    $loadedWarehouseIds = StockMovement::where('product_id', $record->id)
+                                        ->where('type', StockMovementType::InitialStock->value)
+                                        ->whereNull('variant_id')
+                                        ->pluck('warehouse_id');
+                                } else {
+                                    $loadedWarehouseIds = StockMovement::where('product_id', $record->id)
+                                        ->where('type', StockMovementType::InitialStock->value)
+                                        ->whereIn('variant_id', $activeVariants)
+                                        ->groupBy('warehouse_id')
+                                        ->havingRaw('count(distinct variant_id) >= ?', [$activeVariants->count()])
+                                        ->pluck('warehouse_id');
+                                }
+
+                                return Warehouse::where('is_active', true)
+                                    ->whereNotIn('id', $loadedWarehouseIds)
+                                    ->pluck('name', 'id');
+                            })
                             ->searchable()
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(fn (Select $component) => $component
+                                ->getContainer()
+                                ->getComponent('initialStockVariantField')
+                                ->getChildSchema()
+                                ->fill()),
+                        Grid::make(1)
+                            ->schema(fn (Get $get): array => $get('warehouse_id') && $record->variants()->where('is_active', true)->exists()
+                                ? [
+                                    Select::make('variant_id')
+                                        ->label('Variante')
+                                        ->options(function () use ($record, $get) {
+                                            $loadedVariantIds = StockMovement::where('product_id', $record->id)
+                                                ->where('type', StockMovementType::InitialStock->value)
+                                                ->where('warehouse_id', $get('warehouse_id'))
+                                                ->whereNotNull('variant_id')
+                                                ->pluck('variant_id');
+
+                                            return ProductVariant::where('product_id', $record->id)
+                                                ->where('is_active', true)
+                                                ->whereNotIn('id', $loadedVariantIds)
+                                                ->get()
+                                                ->mapWithKeys(fn (ProductVariant $v) => [$v->id => $v->name ?? $v->sku ?? "Variante #{$v->id}"]);
+                                        })
+                                        ->searchable()
+                                        ->required(),
+                                ]
+                                : [])
+                            ->key('initialStockVariantField'),
                         TextInput::make('quantity')
                             ->label('Cantidad')
                             ->numeric()
@@ -136,6 +209,7 @@ class ProductsTable
                                 unitCost: 0.0,
                                 notes: $data['notes'] ?? null,
                                 userId: auth()->id(),
+                                variantId: isset($data['variant_id']) ? (int) $data['variant_id'] : null,
                             );
 
                             Notification::make()

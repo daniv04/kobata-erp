@@ -8,6 +8,7 @@ use App\Filament\Resources\Purchases\PurchaseResource;
 use App\Models\Purchase;
 use App\Services\StockService;
 use Filament\Actions\Action;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -21,6 +22,9 @@ class ViewPurchase extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            EditAction::make()
+                ->visible(fn (): bool => $this->record->status === PurchaseStatus::Pending),
+
             Action::make('receive')
                 ->label('Confirmar recepción')
                 ->icon('heroicon-o-check-circle')
@@ -31,6 +35,7 @@ class ViewPurchase extends ViewRecord
                         'receive_items' => $this->record->items->map(fn ($item) => [
                             'purchase_item_id' => $item->id,
                             'product_name' => $item->product->name,
+                            'variant_name' => $item->variant?->name,
                             'quantity' => $item->quantity,
                         ])->toArray(),
                     ];
@@ -42,12 +47,16 @@ class ViewPurchase extends ViewRecord
                             TextInput::make('product_name')
                                 ->label('Producto')
                                 ->disabled(),
+                            TextInput::make('variant_name')
+                                ->label('Variante')
+                                ->disabled()
+                                ->placeholder('—'),
                             TextInput::make('quantity')
                                 ->label('Cantidad')
                                 ->disabled()
                                 ->numeric(),
                         ])
-                        ->columns(2)
+                        ->columns(3)
                         ->addable(false)
                         ->deletable(false)
                         ->reorderable(false),
@@ -74,6 +83,7 @@ class ViewPurchase extends ViewRecord
                                 unitCost: (float) $item->unit_cost,
                                 notes: $item->notes,
                                 userId: auth()->id(),
+                                variantId: $item->variant_id,
                             );
                         }
 
