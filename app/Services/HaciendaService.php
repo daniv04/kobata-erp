@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -22,9 +23,14 @@ class HaciendaService
      */
     public function consultarContribuyente(string $identificacion): array
     {
-        $response = Http::timeout(10)
-            ->acceptJson()
-            ->get(self::ENDPOINT, ['identificacion' => $identificacion]);
+        try {
+            $response = Http::timeout(5)
+                ->connectTimeout(3)
+                ->acceptJson()
+                ->get(self::ENDPOINT, ['identificacion' => $identificacion]);
+        } catch (ConnectionException $e) {
+            throw new RuntimeException("No se pudo conectar con Hacienda: {$e->getMessage()}", previous: $e);
+        }
 
         if ($response->notFound()) {
             throw new RuntimeException("No se encontró información para la identificación {$identificacion}.");
