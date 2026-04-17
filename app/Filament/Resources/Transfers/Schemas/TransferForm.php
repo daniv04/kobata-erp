@@ -85,16 +85,11 @@ class TransferForm
                                     ->numeric()
                                     ->minValue(0.0001)
                                     ->required(),
-                                TextInput::make('unit_cost')
-                                    ->label('Costo unitario')
-                                    ->numeric()
-                                    ->prefix('₡')
-                                    ->required(),
                                 TextInput::make('notes')
                                     ->label('Observaciones')
                                     ->nullable(),
                             ])
-                            ->columns(5)
+                            ->columns(4)
                             ->minItems(1)
                             ->addActionLabel('Agregar producto')
                             ->defaultItems(1),

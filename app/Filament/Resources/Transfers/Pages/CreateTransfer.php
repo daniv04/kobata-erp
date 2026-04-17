@@ -43,7 +43,6 @@ class CreateTransfer extends CreateRecord
                     'product_id' => $item['product_id'],
                     'variant_id' => $variantId,
                     'quantity_requested' => $item['quantity_requested'],
-                    'unit_cost' => $item['unit_cost'],
                     'notes' => $item['notes'] ?? null,
                 ]);
 

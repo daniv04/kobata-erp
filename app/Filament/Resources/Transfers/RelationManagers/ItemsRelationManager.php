@@ -41,9 +41,6 @@ class ItemsRelationManager extends RelationManager
                 TextColumn::make('quantity_received')
                     ->label('Cantidad recibida')
                     ->numeric(decimalPlaces: 2),
-                TextColumn::make('unit_cost')
-                    ->label('Costo unitario')
-                    ->money(),
                 TextColumn::make('notes')
                     ->label('Observaciones'),
             ]);

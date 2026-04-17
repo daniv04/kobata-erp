@@ -14,7 +14,6 @@ class TransferItem extends Model
         'quantity_requested',
         'quantity_dispatched',
         'quantity_received',
-        'unit_cost',
         'notes',
     ];
 
@@ -24,7 +23,6 @@ class TransferItem extends Model
             'quantity_requested' => 'decimal:4',
             'quantity_dispatched' => 'decimal:4',
             'quantity_received' => 'decimal:4',
-            'unit_cost' => 'decimal:4',
         ];
     }
 

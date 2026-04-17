@@ -57,10 +57,6 @@ class StockMovementsTable
                 TextColumn::make('quantity_after')
                     ->label('Stock resultante')
                     ->numeric(decimalPlaces: 2),
-                TextColumn::make('unit_cost')
-                    ->label('Costo unitario')
-                    ->money()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user.name')
                     ->label('Usuario'),
                 TextColumn::make('reference')
