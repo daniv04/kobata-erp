@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Models\Brands;
+use App\Models\CabysCode;
 use App\Models\Categories;
 use App\Models\Suppliers;
 use Filament\Forms\Components\KeyValue;
@@ -13,6 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class ProductsForm
@@ -20,8 +22,10 @@ class ProductsForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+
             ->components([
                 Section::make('Información general')
+                    ->columnSpan(2)
                     ->schema([
                         Grid::make(3)
                             ->schema([
@@ -38,9 +42,7 @@ class ProductsForm
                         Textarea::make('description')
                             ->label('Descripción')
                             ->columnSpanFull(),
-                        TextInput::make('cabys_code')
-                            ->label('Código CABYS')
-                            ->required(),
+
                         Grid::make(3)
                             ->schema([
                                 Select::make('category_id')
@@ -60,11 +62,11 @@ class ProductsForm
                                     ->nullable(),
                             ]),
                     ]),
-                Section::make(),
 
-                Section::make('Precios e impuestos')
+                Section::make('Precios')
+
                     ->schema([
-                        Grid::make(3)
+                        Grid::make(2)
                             ->schema([
                                 TextInput::make('purchase_price')
                                     ->label('Precio de compra')
@@ -84,32 +86,33 @@ class ProductsForm
                                     ->required()
                                     ->numeric()
                                     ->prefix('₡'),
-                                Select::make('tax_percentage')
-                                    ->label('IVA (%)')
-                                    ->options([
-                                        0 => '0%',
-                                        1 => '1%',
-                                        2 => '2%',
-                                        4 => '4%',
-                                        13 => '13%',
-                                    ])
-                                    ->required(),
+
                             ]),
                     ]),
 
-                Section::make('Control de inventario')
+                Section::make('Impuestos')
                     ->schema([
-                        TextInput::make('min_stock')
-                            ->label('Stock mínimo')
-                            ->required()
+                        Select::make('cabys_code')
+                            ->label('Código CABYS')
+                            ->options(
+                                CabysCode::orderBy('code')
+                                    ->get()
+                                    ->mapWithKeys(fn (CabysCode $c) => [$c->id => "{$c->code} — {$c->description}"])
+                            )
+                            ->searchable()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, ?string $state) {
+                                $set('tax_percentage', CabysCode::find($state)?->tax_percentage);
+                            }),
+                        TextInput::make('tax_percentage')
+                            ->label('IVA (%)')
                             ->numeric()
-                            ->default(3),
-                        Toggle::make('is_active')
-                            ->label('Activo')
-                            ->default(true),
+                            ->required()
+                            ->suffix('%'),
                     ]),
 
                 Section::make('Variantes')
+                    ->columnSpan(2)
                     ->schema([
                         Repeater::make('variants')
                             ->relationship()
@@ -143,6 +146,7 @@ class ProductsForm
                     ->collapsible(),
 
                 Section::make('Compatibilidad de vehículo')
+
                     ->schema([
                         Repeater::make('vehicle_compatibility')
                             ->label('Compatibilidades')
@@ -158,6 +162,19 @@ class ProductsForm
                             ->defaultItems(0)
                             ->addActionLabel('Agregar compatibilidad'),
                     ]),
+                Section::make('Control de inventario')
+                    ->columns(1)
+                    ->schema([
+                        TextInput::make('min_stock')
+                            ->label('Stock mínimo')
+                            ->required()
+                            ->numeric()
+                            ->default(3),
+                        Toggle::make('is_active')
+                            ->label('Activo')
+                            ->default(true),
+                    ]),
+
             ]);
     }
 }
