@@ -60,6 +60,7 @@ class ProductsForm
                                     ->nullable(),
                             ]),
                     ]),
+                Section::make(),
 
                 Section::make('Precios e impuestos')
                     ->schema([
