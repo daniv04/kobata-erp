@@ -57,7 +57,7 @@ class PanelPanelProvider extends PanelProvider
             ->userMenuItems([
                 Action::make('settings')
                     ->label('Configuración')
-                    ->url(fn (): string => route('filament.panel.pages.general-settings-page'))
+                    ->url('/panel/general-settings-page')
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->colors([
