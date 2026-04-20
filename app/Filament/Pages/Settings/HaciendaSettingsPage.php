@@ -23,7 +23,7 @@ class HaciendaSettingsPage extends SettingsPage
 
     protected static ?int $navigationSort = 2;
 
-    public function schema(Schema $schema): Schema
+    public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
