@@ -1,11 +1,11 @@
 # Kobata ERP — Funcionalidades del Sistema
 
-**Versión actual:** Módulo de Inventario + Administración de Usuarios  
+**Versión actual:** Inventario, Compras, Administración de Usuarios  
 **Fecha:** Abril 2026
 
 ---
 
-## Módulo de Inventario
+## Módulo de Catálogo
 
 ### Productos
 - Registro completo de productos con: SKU, código de barras, nombre, descripción y código CABYS.
@@ -14,7 +14,9 @@
 - Clasificación por categoría, proveedor y marca.
 - Control de stock mínimo por producto con estado activo/inactivo.
 - **Compatibilidad de vehículo:** registro de año, marca y modelo de vehículo por producto (diseñado para repuestos automotrices).
+- **Variantes de producto:** cada producto puede tener múltiples variantes con nombre, SKU y código de barras propios. El inventario se controla a nivel de variante cuando existen.
 - Vista de detalle con el stock actual por bodega (desde la ficha del producto).
+- **Carga de stock inicial:** acción desde la lista de productos para registrar el inventario inicial por bodega (y por variante si aplica). El botón se oculta automáticamente cuando todas las bodegas ya tienen stock cargado.
 
 ### Categorías
 - Administración de categorías para clasificar el catálogo de productos.
@@ -30,12 +32,36 @@
 
 ---
 
+## Módulo de Bodegas e Inventario
+
 ### Bodegas
 - Registro de bodegas con nombre, dirección, provincia, cantón, distrito, teléfono y notas.
 - Asignación de un usuario responsable por bodega.
 - Activación / desactivación de bodegas.
 - Vista de inventario por bodega: detalle del stock de todos los productos en esa bodega.
-- **Ajuste manual de stock:** acción para registrar entradas o salidas de inventario en una bodega, con motivo del ajuste, costo unitario y trazabilidad del usuario que realizó el movimiento.
+
+### Página de Inventario
+- Vista consolidada del inventario de todas las bodegas con pestañas por bodega.
+- Columnas: SKU, producto, variante, categoría, bodega, cantidad total, cantidad reservada y cantidad disponible.
+- La cantidad disponible se muestra con código de color: verde si hay stock, rojo si no hay.
+- Filtro por categoría.
+- **Ajuste manual de stock:** acción por registro para registrar entradas (+) o salidas (-) de inventario, con notas obligatorias y trazabilidad del usuario que realizó el ajuste.
+
+---
+
+### Compras
+Flujo completo de órdenes de compra a proveedores:
+
+| Estado | Descripción |
+|--------|-------------|
+| **Pendiente** | Compra registrada en espera de recepción de mercadería. |
+| **Recibida** | Se confirma la recepción; el stock ingresa automáticamente a la bodega destino. |
+| **Cancelada** | La compra se cancela. |
+
+- Cada compra registra: proveedor, bodega destino, fecha de pedido, notas y número de referencia.
+- Ítems con: producto, variante (si aplica), cantidad, costo unitario y notas.
+- Soporte para editar compras en estado pendiente.
+- Trazabilidad del usuario que creó la compra y las fechas correspondientes.
 
 ---
 
@@ -49,7 +75,7 @@ Flujo completo de traslado de mercancía entre dos bodegas:
 | **Recibido** | El encargado de la bodega destino confirma las cantidades recibidas; el stock ingresa a la bodega destino. |
 | **Cancelado** | El traslado se cancela antes del despacho y se liberan las reservas automáticamente. |
 
-- Cada traslado registra: bodega origen, bodega destino, productos, cantidades y notas.
+- Cada traslado registra: bodega origen, bodega destino, productos (con variante si aplica), cantidades y notas.
 - Soporte para despachar cantidades parciales por ítem.
 - Trazabilidad completa: quién solicitó, quién despachó, quién recibió y las fechas correspondientes.
 - Número de referencia único por traslado.
@@ -58,8 +84,19 @@ Flujo completo de traslado de mercancía entre dos bodegas:
 
 ### Movimientos de Stock (Auditoría)
 - Registro automático e inmutable de todos los movimientos de inventario.
-- Tipos de movimiento registrados: compra, entrada por traslado, salida por traslado, ajuste, venta, consignación y devolución.
-- Información por movimiento: fecha, producto, SKU, bodega, tipo, cantidad, stock anterior, stock resultante, costo unitario y usuario responsable.
+- Tipos de movimiento registrados:
+  - Recepción de compras
+  - Salida confirmada por guía de retiro (venta)
+  - Ajuste manual
+  - Entrada por traslado
+  - Salida por traslado
+  - Salida por consignación
+  - Devolución de consignación
+  - Salida por crédito
+  - Devolución de crédito
+  - Devolución por nota de crédito
+  - Stock inicial
+- Información por movimiento: fecha, producto, variante, SKU, bodega, tipo, cantidad, stock anterior, stock resultante y usuario responsable.
 - Filtros por: tipo de movimiento, bodega, producto y rango de fechas.
 - Solo lectura: no se pueden crear ni editar movimientos manualmente (integridad del registro).
 
