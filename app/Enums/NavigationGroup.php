@@ -13,6 +13,7 @@ enum NavigationGroup implements HasIcon, HasLabel
     case Catalogo;
     case BodegasInventario;
     case Clientes;
+    case Configuracion;
 
     public function getLabel(): string
     {
@@ -20,6 +21,7 @@ enum NavigationGroup implements HasIcon, HasLabel
             self::Catalogo => 'Catálogo de Productos',
             self::BodegasInventario => 'Bodegas e Inventario',
             self::Clientes => 'Clientes',
+            self::Configuracion => 'Configuración',
         };
     }
 
@@ -29,6 +31,7 @@ enum NavigationGroup implements HasIcon, HasLabel
             self::Catalogo => Heroicon::OutlinedArchiveBox,
             self::BodegasInventario => Heroicon::OutlinedBuildingStorefront,
             self::Clientes => Heroicon::OutlinedUsers,
+            self::Configuracion => Heroicon::OutlinedCog6Tooth,
         };
     }
 }

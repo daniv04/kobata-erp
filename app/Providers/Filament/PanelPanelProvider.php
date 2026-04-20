@@ -3,7 +3,9 @@
 namespace App\Providers\Filament;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Pages\Settings\GeneralSettingsPage;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -43,6 +45,8 @@ class PanelPanelProvider extends PanelProvider
                     ->label(NavigationGroup::Clientes->getLabel()),
                 FilamentNavigationGroup::make()
                     ->label('Usuarios y Roles'),
+                FilamentNavigationGroup::make()
+                    ->label(NavigationGroup::Configuracion->getLabel()),
             ])
             ->renderHook(
                 PanelsRenderHook::BODY_START,
@@ -51,6 +55,12 @@ class PanelPanelProvider extends PanelProvider
                 ),
             )
 
+            ->userMenuItems([
+                Action::make('settings')
+                    ->label('Configuración')
+                    ->url(fn (): string => GeneralSettingsPage::getUrl())
+                    ->icon('heroicon-o-cog-6-tooth'),
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
