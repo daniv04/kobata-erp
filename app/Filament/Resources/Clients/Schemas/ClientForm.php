@@ -10,6 +10,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Cache;
@@ -21,6 +22,7 @@ class ClientForm
     {
         return $schema
             ->components([
+                View::make('components.form-required-legend')->columnSpanFull(),
                 Section::make('Datos Fiscales')
                     ->schema([
                         Grid::make(2)
@@ -53,6 +55,10 @@ class ClientForm
 
                                                     return;
                                                 }
+
+                                                $set('hacienda_name', '');
+                                                $set('economic_activity_code', '');
+                                                $set('economic_activity_description', '');
 
                                                 try {
                                                     $data = Cache::remember(
@@ -109,29 +115,36 @@ class ClientForm
                                     ->label('Nombre de contacto'),
                                 TextInput::make('phone')
                                     ->label('Teléfono')
-                                    ->tel(),
+                                    ->tel()
+                                    ->required(),
                             ]),
                         TextInput::make('email')
                             ->label('Correo electrónico')
-                            ->email(),
+                            ->email()
+                            ->required(),
                     ]),
 
-                Section::make('Ubicación')
+                Section::make('Ubicación')->columnSpanFull()
                     ->schema([
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('province')
-                                    ->label('Provincia'),
+                                    ->label('Provincia')
+                                    ->required(),
                                 TextInput::make('canton')
-                                    ->label('Cantón'),
+                                    ->label('Cantón')
+                                    ->required(),
                                 TextInput::make('district')
-                                    ->label('Distrito'),
+                                    ->label('Distrito')
+                                    ->required(),
                                 TextInput::make('neighborhood')
-                                    ->label('Barrio'),
+                                    ->label('Barrio')
+                                    ->required(),
                             ]),
                         TextInput::make('address')
                             ->label('Dirección')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->required(),
                     ]),
 
                 Toggle::make('is_active')

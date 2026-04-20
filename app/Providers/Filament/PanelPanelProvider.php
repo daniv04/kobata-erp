@@ -13,6 +13,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -20,6 +21,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class PanelPanelProvider extends PanelProvider
@@ -35,12 +37,19 @@ class PanelPanelProvider extends PanelProvider
             ->navigationGroups([
                 FilamentNavigationGroup::make()
                     ->label(NavigationGroup::Catalogo->getLabel()),
-
                 FilamentNavigationGroup::make()
                     ->label(NavigationGroup::BodegasInventario->getLabel()),
                 FilamentNavigationGroup::make()
+                    ->label(NavigationGroup::Clientes->getLabel()),
+                FilamentNavigationGroup::make()
                     ->label('Usuarios y Roles'),
             ])
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): HtmlString => new HtmlString(
+                    '<script>document.addEventListener("livewire:initialized",()=>{document.querySelectorAll("form").forEach(f=>f.setAttribute("novalidate",""))})</script>'
+                ),
+            )
 
             ->colors([
                 'primary' => Color::Amber,

@@ -17,22 +17,17 @@ class ClientsTable
     {
         return $table
             ->columns([
+                TextColumn::make('code')
+                    ->label('Código')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('id_number')
                     ->label('Identificación')
                     ->searchable(),
                 TextColumn::make('hacienda_name')
                     ->label('Nombre')
                     ->searchable(),
-                TextColumn::make('id_number_type')
-                    ->label('Tipo')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'fisica' => 'Física',
-                        'juridica' => 'Jurídica',
-                        'dimex' => 'DIMEX',
-                        'nite' => 'NITE',
-                        default => $state,
-                    }),
+
                 TextColumn::make('email')
                     ->label('Correo')
                     ->searchable()
