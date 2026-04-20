@@ -13,8 +13,6 @@ class HaciendaSettingsPage extends SettingsPage
 {
     protected static string $settings = HaciendaSettings::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
-
     protected static ?string $navigationLabel = 'Hacienda';
 
     protected static ?string $title = 'Configuración de Hacienda';

@@ -12,8 +12,6 @@ class GeneralSettingsPage extends SettingsPage
 {
     protected static string $settings = GeneralSettings::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
-
     protected static ?string $navigationLabel = 'General';
 
     protected static ?string $title = 'Configuración General';
