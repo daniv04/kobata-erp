@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources\Clients\Schemas;
 
+use App\Models\Canton;
+use App\Models\District;
+use App\Models\Neighborhood;
+use App\Models\Province;
 use App\Services\HaciendaService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -10,6 +14,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -128,18 +134,48 @@ class ClientForm
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('province')
+                                Select::make('province_id')
                                     ->label('Provincia')
-                                    ->required(),
-                                TextInput::make('canton')
+                                    ->options(Province::orderBy('name')->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function (Set $set) {
+                                        $set('canton_id', null);
+                                        $set('district_id', null);
+                                        $set('neighborhood_id', null);
+                                    }),
+                                Select::make('canton_id')
                                     ->label('Cantón')
-                                    ->required(),
-                                TextInput::make('district')
+                                    ->options(fn (Get $get) => Canton::where('province_id', $get('province_id'))
+                                        ->orderBy('name')
+                                        ->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->disabled(fn (Get $get) => ! $get('province_id'))
+                                    ->afterStateUpdated(function (Set $set) {
+                                        $set('district_id', null);
+                                        $set('neighborhood_id', null);
+                                    }),
+                                Select::make('district_id')
                                     ->label('Distrito')
-                                    ->required(),
-                                TextInput::make('neighborhood')
+                                    ->options(fn (Get $get) => District::where('canton_id', $get('canton_id'))
+                                        ->orderBy('name')
+                                        ->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->disabled(fn (Get $get) => ! $get('canton_id'))
+                                    ->afterStateUpdated(fn (Set $set) => $set('neighborhood_id', null)),
+                                Select::make('neighborhood_id')
                                     ->label('Barrio')
-                                    ->required(),
+                                    ->options(fn (Get $get) => Neighborhood::where('district_id', $get('district_id'))
+                                        ->orderBy('name')
+                                        ->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->disabled(fn (Get $get) => ! $get('district_id')),
                             ]),
                         TextInput::make('address')
                             ->label('Dirección')
