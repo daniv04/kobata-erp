@@ -26,4 +26,13 @@ class Client extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Client $client) {
+            $last = static::withoutGlobalScopes()->orderByDesc('id')->value('code');
+            $number = $last ? (int) str_replace('KOB-', '', $last) + 1 : 1;
+            $client->code = 'KOB-'.str_pad($number, 4, '0', STR_PAD_LEFT);
+        });
+    }
 }
