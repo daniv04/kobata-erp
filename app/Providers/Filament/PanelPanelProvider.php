@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Enums\NavigationGroup;
-use App\Filament\Pages\Settings\GeneralSettingsPage;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
@@ -58,7 +57,7 @@ class PanelPanelProvider extends PanelProvider
             ->userMenuItems([
                 Action::make('settings')
                     ->label('Configuración')
-                    ->url(fn (): string => GeneralSettingsPage::getUrl())
+                    ->url(fn (): string => route('filament.panel.pages.general-settings-page'))
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->colors([
