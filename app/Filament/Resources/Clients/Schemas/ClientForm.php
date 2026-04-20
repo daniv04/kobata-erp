@@ -45,7 +45,6 @@ class ClientForm
                                 TextInput::make('id_number')
                                     ->label('Número de identificación')
                                     ->required()
-                                    ->unique(ignoreRecord: true)
                                     ->suffixAction(
                                         Action::make('consultarHacienda')
                                             ->label('Consultar Hacienda')
