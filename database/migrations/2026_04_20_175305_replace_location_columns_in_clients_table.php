@@ -29,7 +29,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('clients', function (Blueprint $table) {
-            $table->dropForeign(['province_id', 'canton_id', 'district_id', 'neighborhood_id']);
+            $table->dropForeign(['province_id']);
+            $table->dropForeign(['canton_id']);
+            $table->dropForeign(['district_id']);
+            $table->dropForeign(['neighborhood_id']);
             $table->dropColumn(['province_id', 'canton_id', 'district_id', 'neighborhood_id']);
 
             $table->string('province')->nullable()->after('address');

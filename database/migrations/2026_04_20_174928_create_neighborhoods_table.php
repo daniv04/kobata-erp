@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('district_id')->references('id')->on('districts')->cascadeOnDelete();
-            $table->index('district_id');
+            $table->unique(['district_id', 'code']);
         });
     }
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('canton_id')->references('id')->on('cantons')->cascadeOnDelete();
-            $table->index('canton_id');
+            $table->unique(['canton_id', 'code']);
         });
     }
 
