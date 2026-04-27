@@ -37,15 +37,19 @@ class PanelPanelProvider extends PanelProvider
             ->passwordReset()
             ->navigationGroups([
                 FilamentNavigationGroup::make()
-                    ->label(NavigationGroup::Catalogo->getLabel()),
+                    ->label(NavigationGroup::Catalogo->getLabel())
+                    ->icon(NavigationGroup::Catalogo->getIcon()),
                 FilamentNavigationGroup::make()
-                    ->label(NavigationGroup::BodegasInventario->getLabel()),
+                    ->label(NavigationGroup::BodegasInventario->getLabel())
+                    ->icon(NavigationGroup::BodegasInventario->getIcon()),
                 FilamentNavigationGroup::make()
-                    ->label(NavigationGroup::Clientes->getLabel()),
+                    ->label(NavigationGroup::Clientes->getLabel())
+                    ->icon(NavigationGroup::Clientes->getIcon()),
                 FilamentNavigationGroup::make()
                     ->label('Usuarios y Roles'),
                 FilamentNavigationGroup::make()
-                    ->label(NavigationGroup::Configuracion->getLabel()),
+                    ->label(NavigationGroup::Configuracion->getLabel())
+                    ->icon(NavigationGroup::Configuracion->getIcon()),
             ])
             ->renderHook(
                 PanelsRenderHook::BODY_START,
