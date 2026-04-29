@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 enum NavigationGroup implements HasIcon, HasLabel
 {
+    case Ventas;
     case Catalogo;
     case BodegasInventario;
     case Clientes;
@@ -18,6 +19,7 @@ enum NavigationGroup implements HasIcon, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
+            self::Ventas => 'Ventas',
             self::Catalogo => 'Catálogo de Productos',
             self::BodegasInventario => 'Bodegas e Inventario',
             self::Clientes => 'Clientes',
@@ -28,6 +30,7 @@ enum NavigationGroup implements HasIcon, HasLabel
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
         return match ($this) {
+            self::Ventas => Heroicon::OutlinedDocumentText,
             self::Catalogo => Heroicon::OutlinedArchiveBox,
             self::BodegasInventario => Heroicon::OutlinedBuildingStorefront,
             self::Clientes => Heroicon::OutlinedUsers,
