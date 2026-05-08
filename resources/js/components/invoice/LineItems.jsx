@@ -60,10 +60,10 @@ export default function LineItems({ items, onChange }) {
           {/* Header */}
           <div className="grid grid-cols-[1fr_72px_116px_64px_100px_28px_28px] gap-2 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 dark:bg-white/5 dark:text-gray-400">
             <span>Producto</span>
-            <span className="text-center">Cant.</span>
-            <span className="text-right">Precio unit.</span>
+            <span>Cant.</span>
+            <span>Precio unit.</span>
             <span className="text-right">IVA</span>
-            <span className="text-right">Total</span>
+            <span className="text-center">Total</span>
             <span className="text-center">Desc.</span>
             <span />
           </div>
