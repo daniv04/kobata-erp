@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Facturacion;
+namespace App\Http\Controllers\Hacienda;
 
 use App\Services\HaciendaService;
 use Illuminate\Http\JsonResponse;

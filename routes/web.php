@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\Facturacion\CategoriesController;
-use App\Http\Controllers\Facturacion\ClientSearchController;
-use App\Http\Controllers\Facturacion\ClientStoreController;
+use App\Http\Controllers\Clientes\ClientSearchController;
+use App\Http\Controllers\Clientes\ClientStoreController;
 use App\Http\Controllers\Facturacion\FacturacionController;
-use App\Http\Controllers\Facturacion\HaciendaLookupController;
-use App\Http\Controllers\Facturacion\LocationController;
-use App\Http\Controllers\Facturacion\ProductSearchController;
+use App\Http\Controllers\Hacienda\HaciendaLookupController;
+use App\Http\Controllers\Productos\CategoriesController;
+use App\Http\Controllers\Productos\ProductSearchController;
+use App\Http\Controllers\Shared\LocationController;
 use App\Services\HaciendaService;
 use Illuminate\Support\Facades\Route;
 

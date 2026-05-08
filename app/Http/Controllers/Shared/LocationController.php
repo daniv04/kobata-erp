@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Facturacion;
+namespace App\Http\Controllers\Shared;
 
 use App\Models\Canton;
 use App\Models\District;

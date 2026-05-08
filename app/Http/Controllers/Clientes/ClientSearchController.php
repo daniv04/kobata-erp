@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Facturacion;
+namespace App\Http\Controllers\Clientes;
 
 use App\Models\Client;
 use Illuminate\Http\JsonResponse;
