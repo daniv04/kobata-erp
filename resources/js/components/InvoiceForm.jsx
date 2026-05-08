@@ -115,7 +115,7 @@ export default function InvoiceForm() {
 
 function FormSection({ number, title, description, children }) {
   return (
-    <div className="overflow-hidden rounded-xl bg-gray-50 shadow-sm ring-1 ring-black/5 dark:bg-gray-900 dark:ring-white/10">
+    <div className="rounded-xl bg-gray-50 shadow-sm ring-1 ring-black/5 dark:bg-gray-900 dark:ring-white/10">
       <div className="flex items-center gap-3 border-b border-gray-200 px-6 py-4 dark:border-white/10">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">
           {number}

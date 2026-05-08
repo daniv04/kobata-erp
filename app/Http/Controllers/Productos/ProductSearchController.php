@@ -14,7 +14,7 @@ class ProductSearchController
         $categoryId = $request->query('category_id');
 
         $products = Products::with('category')
-            ->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('is_active')->orWhere('is_active', true))
             ->when(strlen($query) >= 2, fn ($q) => $q->where(function ($q) use ($query) {
                 $q->where('name', 'ilike', "%{$query}%")
                     ->orWhere('sku', 'ilike', "%{$query}%")
