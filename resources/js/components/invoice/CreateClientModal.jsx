@@ -20,6 +20,9 @@ export default function CreateClientModal({ onCreated, onClose }) {
     id_number_type: '02',
     id_number: '',
     hacienda_name: '',
+    economic_activity_code: '',
+    economic_activity_description: '',
+    contact_name: '',
     email: '',
     phone: '',
     province_id: '',
@@ -29,12 +32,14 @@ export default function CreateClientModal({ onCreated, onClose }) {
     address: '',
   });
 
-  const [provinces, setProvinces] = useState([]);
-  const [cantons, setCantons] = useState([]);
-  const [districts, setDistricts] = useState([]);
+  const [provinces, setProvinces]       = useState([]);
+  const [cantons, setCantons]           = useState([]);
+  const [districts, setDistricts]       = useState([]);
   const [neighborhoods, setNeighborhoods] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors]             = useState({});
+  const [submitting, setSubmitting]     = useState(false);
+  const [lookingUp, setLookingUp]       = useState(false);
+  const [lookupError, setLookupError]   = useState('');
 
   useEffect(() => {
     apiFetch('/panel/ubicacion/provincias').then(setProvinces).catch(() => {});
@@ -64,6 +69,34 @@ export default function CreateClientModal({ onCreated, onClose }) {
       return next;
     });
     setErrors(prev => ({ ...prev, [field]: null }));
+  }
+
+  async function handleHaciendaLookup() {
+    if (!form.id_number) return;
+    setLookingUp(true);
+    setLookupError('');
+
+    try {
+      const res = await fetch(`/panel/hacienda/lookup?identificacion=${encodeURIComponent(form.id_number)}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLookupError(data.message ?? 'No se pudo consultar Hacienda.');
+        return;
+      }
+
+      setForm(prev => ({
+        ...prev,
+        hacienda_name: data.nombre ?? prev.hacienda_name,
+        id_number_type: data.tipoIdentificacion || prev.id_number_type,
+        economic_activity_code: data.actividad_codigo ?? prev.economic_activity_code,
+        economic_activity_description: data.actividad_descripcion ?? prev.economic_activity_description,
+      }));
+    } catch {
+      setLookupError('Error de conexión al consultar Hacienda.');
+    } finally {
+      setLookingUp(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -98,7 +131,7 @@ export default function CreateClientModal({ onCreated, onClose }) {
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl dark:bg-gray-900">
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <h2 className="text-base font-semibold text-gray-950 dark:text-white">Crear cliente</h2>
           <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -107,103 +140,109 @@ export default function CreateClientModal({ onCreated, onClose }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+        <form onSubmit={handleSubmit} className="space-y-6 p-6">
           {errors.general && (
             <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
               {errors.general}
             </p>
           )}
 
-          {/* Identificación */}
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Tipo de identificación" error={errors.id_number_type} required>
-              <select
-                value={form.id_number_type}
-                onChange={e => set('id_number_type', e.target.value)}
-                className={selectCls(errors.id_number_type)}
-              >
-                {TIPOS_ID.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
+          {/* ── Datos Fiscales ── */}
+          <Section title="Datos Fiscales">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Tipo de identificación" error={errors.id_number_type} required>
+                <select value={form.id_number_type} onChange={e => set('id_number_type', e.target.value)} className={selectCls(errors.id_number_type)}>
+                  {TIPOS_ID.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </Field>
+
+              <Field label="Número de identificación" error={errors.id_number} required>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={form.id_number}
+                    onChange={e => set('id_number', e.target.value)}
+                    className={inputCls(errors.id_number) + ' flex-1'}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleHaciendaLookup}
+                    disabled={!form.id_number || lookingUp}
+                    title="Consultar Hacienda"
+                    className="shrink-0 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-40 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20"
+                  >
+                    {lookingUp ? '...' : '🔍'}
+                  </button>
+                </div>
+                {lookupError && <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{lookupError}</p>}
+              </Field>
+            </div>
+
+            <Field label="Nombre registrado en Hacienda" error={errors.hacienda_name} required>
+              <input type="text" value={form.hacienda_name} onChange={e => set('hacienda_name', e.target.value)} className={inputCls(errors.hacienda_name)} />
             </Field>
 
-            <Field label="Número de identificación" error={errors.id_number} required>
-              <input
-                type="text"
-                value={form.id_number}
-                onChange={e => set('id_number', e.target.value)}
-                className={inputCls(errors.id_number)}
-              />
-            </Field>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Código actividad económica" error={errors.economic_activity_code}>
+                <input type="text" value={form.economic_activity_code} onChange={e => set('economic_activity_code', e.target.value)} className={inputCls(errors.economic_activity_code)} />
+              </Field>
+              <Field label="Descripción actividad económica" error={errors.economic_activity_description}>
+                <input type="text" value={form.economic_activity_description} onChange={e => set('economic_activity_description', e.target.value)} className={inputCls(errors.economic_activity_description)} />
+              </Field>
+            </div>
+          </Section>
 
-          <Field label="Nombre registrado en Hacienda" error={errors.hacienda_name} required>
-            <input
-              type="text"
-              value={form.hacienda_name}
-              onChange={e => set('hacienda_name', e.target.value)}
-              className={inputCls(errors.hacienda_name)}
-            />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-4">
+          {/* ── Datos de Contacto ── */}
+          <Section title="Datos de Contacto">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Nombre de contacto" error={errors.contact_name}>
+                <input type="text" value={form.contact_name} onChange={e => set('contact_name', e.target.value)} className={inputCls(errors.contact_name)} />
+              </Field>
+              <Field label="Teléfono" error={errors.phone} required>
+                <input type="text" value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls(errors.phone)} />
+              </Field>
+            </div>
             <Field label="Correo electrónico" error={errors.email} required>
-              <input
-                type="email"
-                value={form.email}
-                onChange={e => set('email', e.target.value)}
-                className={inputCls(errors.email)}
-              />
+              <input type="email" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls(errors.email)} />
             </Field>
+          </Section>
 
-            <Field label="Teléfono" error={errors.phone} required>
-              <input
-                type="text"
-                value={form.phone}
-                onChange={e => set('phone', e.target.value)}
-                className={inputCls(errors.phone)}
-              />
+          {/* ── Ubicación ── */}
+          <Section title="Ubicación">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Provincia" error={errors.province_id} required>
+                <select value={form.province_id} onChange={e => set('province_id', e.target.value)} className={selectCls(errors.province_id)}>
+                  <option value="">Seleccionar...</option>
+                  {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </Field>
+
+              <Field label="Cantón" error={errors.canton_id} required>
+                <select value={form.canton_id} onChange={e => set('canton_id', e.target.value)} disabled={!form.province_id} className={selectCls(errors.canton_id)}>
+                  <option value="">Seleccionar...</option>
+                  {cantons.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </Field>
+
+              <Field label="Distrito" error={errors.district_id} required>
+                <select value={form.district_id} onChange={e => set('district_id', e.target.value)} disabled={!form.canton_id} className={selectCls(errors.district_id)}>
+                  <option value="">Seleccionar...</option>
+                  {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </Field>
+
+              <Field label="Barrio" error={errors.neighborhood_id}>
+                <select value={form.neighborhood_id} onChange={e => set('neighborhood_id', e.target.value)} disabled={!form.district_id} className={selectCls(errors.neighborhood_id)}>
+                  <option value="">Seleccionar...</option>
+                  {neighborhoods.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
+                </select>
+              </Field>
+            </div>
+
+            <Field label="Dirección exacta" error={errors.address} required>
+              <input type="text" value={form.address} onChange={e => set('address', e.target.value)} className={inputCls(errors.address)} />
             </Field>
-          </div>
-
-          {/* Ubicación */}
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Provincia" error={errors.province_id} required>
-              <select value={form.province_id} onChange={e => set('province_id', e.target.value)} className={selectCls(errors.province_id)}>
-                <option value="">Seleccionar...</option>
-                {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </Field>
-
-            <Field label="Cantón" error={errors.canton_id} required>
-              <select value={form.canton_id} onChange={e => set('canton_id', e.target.value)} disabled={!form.province_id} className={selectCls(errors.canton_id)}>
-                <option value="">Seleccionar...</option>
-                {cantons.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </Field>
-
-            <Field label="Distrito" error={errors.district_id} required>
-              <select value={form.district_id} onChange={e => set('district_id', e.target.value)} disabled={!form.canton_id} className={selectCls(errors.district_id)}>
-                <option value="">Seleccionar...</option>
-                {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select>
-            </Field>
-
-            <Field label="Barrio" error={errors.neighborhood_id}>
-              <select value={form.neighborhood_id} onChange={e => set('neighborhood_id', e.target.value)} disabled={!form.district_id} className={selectCls(errors.neighborhood_id)}>
-                <option value="">Seleccionar...</option>
-                {neighborhoods.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
-              </select>
-            </Field>
-          </div>
-
-          <Field label="Dirección exacta" error={errors.address} required>
-            <input
-              type="text"
-              value={form.address}
-              onChange={e => set('address', e.target.value)}
-              className={inputCls(errors.address)}
-            />
-          </Field>
+          </Section>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
@@ -220,6 +259,17 @@ export default function CreateClientModal({ onCreated, onClose }) {
   );
 }
 
+function Section({ title, children }) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{title}</h3>
+      <div className="space-y-4 rounded-lg bg-gray-50 p-4 dark:bg-white/5">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function Field({ label, error, required, children }) {
   return (
     <div className="flex flex-col gap-1">
@@ -227,7 +277,7 @@ function Field({ label, error, required, children }) {
         {label}{required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
       {children}
-      {error && <p className="text-xs text-red-500">{error[0] ?? error}</p>}
+      {error && <p className="text-xs text-red-500">{Array.isArray(error) ? error[0] : error}</p>}
     </div>
   );
 }

@@ -19,9 +19,9 @@ class ClientSearchController
         $clients = Client::with(['province', 'canton', 'district'])
             ->where('is_active', true)
             ->where(function ($q) use ($query) {
-                $q->where('hacienda_name', 'like', "%{$query}%")
-                    ->orWhere('id_number', 'like', "%{$query}%")
-                    ->orWhere('code', 'like', "%{$query}%");
+                $q->where('hacienda_name', 'ilike', "%{$query}%")
+                    ->orWhere('id_number', 'ilike', "%{$query}%")
+                    ->orWhere('code', 'ilike', "%{$query}%");
             })
             ->limit(10)
             ->get()

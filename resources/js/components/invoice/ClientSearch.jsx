@@ -70,6 +70,7 @@ export default function ClientSearch({ selectedClient, onSelect, onCreateClick }
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {selectedClient.id_number_type}: {selectedClient.id_number}
               {selectedClient.province && ` · ${selectedClient.province}`}
+            
             </p>
           </div>
           <button type="button" onClick={handleClear} className="ml-4 text-xs text-gray-500 hover:text-red-500 dark:text-gray-400">
@@ -101,7 +102,7 @@ export default function ClientSearch({ selectedClient, onSelect, onCreateClick }
                   className="block w-full border-b border-gray-100 px-4 py-2.5 text-left text-sm transition-colors last:border-0 hover:bg-amber-50 dark:border-white/10 dark:hover:bg-amber-900/20"
                 >
                   <p className="font-medium text-gray-950 dark:text-white">{client.hacienda_name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{client.id_number_type}: {client.id_number}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{client.code}: {client.id_number}</p>
                 </button>
               ))}
 
