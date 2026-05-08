@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Facturacion\CategoriesController;
 use App\Http\Controllers\Facturacion\ClientSearchController;
 use App\Http\Controllers\Facturacion\ClientStoreController;
 use App\Http\Controllers\Facturacion\FacturacionController;
 use App\Http\Controllers\Facturacion\HaciendaLookupController;
 use App\Http\Controllers\Facturacion\LocationController;
+use App\Http\Controllers\Facturacion\ProductSearchController;
 use App\Services\HaciendaService;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +24,8 @@ Route::middleware(['auth', 'web'])
         Route::get('/clientes/search', ClientSearchController::class)->name('clientes.search');
         Route::post('/clientes', ClientStoreController::class)->name('clientes.store');
         Route::get('/hacienda/lookup', HaciendaLookupController::class)->name('hacienda.lookup');
+        Route::get('/productos/search', ProductSearchController::class)->name('productos.search');
+        Route::get('/categorias', CategoriesController::class)->name('categorias.index');
         Route::get('/ubicacion/provincias', [LocationController::class, 'provinces'])->name('ubicacion.provincias');
         Route::get('/ubicacion/cantones', [LocationController::class, 'cantons'])->name('ubicacion.cantones');
         Route::get('/ubicacion/distritos', [LocationController::class, 'districts'])->name('ubicacion.distritos');
