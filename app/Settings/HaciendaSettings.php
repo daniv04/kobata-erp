@@ -16,6 +16,22 @@ class HaciendaSettings extends Settings
 
     public string $password;
 
+    public string $identification_type;
+
+    public ?string $nombre_comercial;
+
+    public ?string $registro_fiscal_8707;
+
+    public ?int $province_id;
+
+    public ?int $canton_id;
+
+    public ?int $district_id;
+
+    public ?int $neighborhood_id;
+
+    public ?string $address;
+
     public static function group(): string
     {
         return 'hacienda';

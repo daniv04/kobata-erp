@@ -1,6 +1,7 @@
+import '../css/app.css';
 import './bootstrap';
 import { createRoot } from 'react-dom/client';
-import InvoiceForm from './components/invoice/InvoiceForm';
+import InvoiceForm from './components/InvoiceForm';
 
 /**
  * CONCEPTO: Punto de montaje de React

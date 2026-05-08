@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Facturacion;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreInvoiceRequest;
 use App\Services\Facturacion\FacturacionService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class FacturacionController extends Controller
 {
@@ -15,11 +15,10 @@ class FacturacionController extends Controller
      * Recibe el JSON del formulario React y lo procesa
      * Laravel inyecta FacturacionService automáticamente (dependency injection)
      */
-    public function store(Request $request, FacturacionService $service): JsonResponse
+    public function store(StoreInvoiceRequest $request, FacturacionService $service): JsonResponse
     {
         try {
-            // El servicio se encarga de inyectar el Emisor y enviar a Hacienda
-            $response = $service->enviar($request->all());
+            $response = $service->enviar($request->integer('client_id'));
 
             return response()->json($response);
         } catch (\Exception $e) {

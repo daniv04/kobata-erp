@@ -23,7 +23,7 @@ class CabysCodesResource extends Resource
 
     protected static ?string $pluralLabel = 'Códigos CABYS';
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Configuracion;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Catalogo;
 
     protected static string|BackedEnum|null $navigationIcon = null;
 

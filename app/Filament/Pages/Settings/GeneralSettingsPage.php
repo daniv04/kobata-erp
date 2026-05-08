@@ -2,7 +2,6 @@
 
 namespace App\Filament\Pages\Settings;
 
-use App\Enums\NavigationGroup;
 use App\Settings\GeneralSettings;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\SettingsPage;
@@ -16,7 +15,7 @@ class GeneralSettingsPage extends SettingsPage
 
     protected static ?string $title = 'Configuración General';
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Configuracion;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?int $navigationSort = 1;
 
@@ -34,10 +33,7 @@ class GeneralSettingsPage extends SettingsPage
                 TextInput::make('company_phone')
                     ->label('Teléfono')
                     ->tel()
-                    ->required(),
-                TextInput::make('company_address')
-                    ->label('Dirección')
-                    ->required(),
+                    ->required()
             ]);
     }
 }

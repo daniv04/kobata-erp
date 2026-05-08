@@ -1,135 +1,137 @@
 import { useState, useEffect, useRef } from 'react';
 
-/**
- * ClientSearch — Búsqueda de clientes con debounce
- *
- * Props:
- *   - onSelect: fn(clientData) ← se ejecuta cuando el usuario selecciona un cliente
- *   - onClear?: fn() ← opcional, se ejecuta cuando borra la búsqueda
- *
- * CONCEPTOS:
- * - useState: estado de query (búsqueda), results (resultados), loading
- * - useEffect: ejecuta búsqueda cuando query cambia (con debounce)
- * - useRef: almacena el timeout ID del debounce
- *
- * DEBOUNCE: espera 300ms sin que el usuario escriba antes de hacer la búsqueda.
- * Sin debounce, haríamos GET /api/clientes/search en cada tecla — mala experiencia.
- */
-export default function ClientSearch({ onSelect, onClear }) {
-    const [query, setQuery] = useState('');
-    const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [showResults, setShowResults] = useState(false);
-    const debounceRef = useRef(null);
+export default function ClientSearch({ selectedClient, onSelect, onCreateClick }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [noResults, setNoResults] = useState(false);
+  const timeoutRef = useRef(null);
+  const containerRef = useRef(null);
 
-    /**
-     * useEffect: ejecuta búsqueda cuando `query` cambia
-     * La dependencia [query] hace que el effect se re-ejecute cada vez que query cambia
-     */
-    useEffect(() => {
-        // Limpia el timeout anterior (si el usuario sigue escribiendo, cancelamos la búsqueda anterior)
-        clearTimeout(debounceRef.current);
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-        // Si query es muy corta, no buscar
-        if (query.length < 2) {
-            setResults([]);
-            setShowResults(false);
-            return;
-        }
-
-        // Espera 300ms antes de buscar
-        debounceRef.current = setTimeout(async () => {
-            setLoading(true);
-            try {
-                const { data } = await window.axios.get('/api/clientes/search', {
-                    params: { q: query },
-                });
-                setResults(data);
-                setShowResults(true);
-            } catch (error) {
-                console.error('Error buscando clientes:', error);
-                setResults([]);
-            } finally {
-                setLoading(false);
-            }
-        }, 300);
-
-        // Cleanup: si el componente se desmonta, cancela la búsqueda pendiente
-        return () => clearTimeout(debounceRef.current);
-    }, [query]); // Dependencia: solo ejecuta cuando query cambia
-
-    function handleSelectClient(cliente) {
-        onSelect(cliente);
-        setQuery('');
-        setResults([]);
-        setShowResults(false);
+    if (query.length < 2) {
+      setResults([]);
+      setNoResults(false);
+      setOpen(false);
+      return;
     }
 
-    function handleClear() {
-        setQuery('');
+    setLoading(true);
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/panel/clientes/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setResults(data);
+        setNoResults(data.length === 0);
+        setOpen(true);
+      } catch {
         setResults([]);
-        setShowResults(false);
-        if (onClear) onClear();
+        setNoResults(false);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+  }, [query]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
     }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    return (
-        <div className="relative">
-            {/* Input de búsqueda */}
-            <div className="flex rounded-lg bg-white shadow-sm ring-1 ring-black/10 transition duration-75 focus-within:ring-2 focus-within:ring-amber-600 dark:bg-white/5 dark:ring-white/20 dark:focus-within:ring-amber-500">
-                <input
-                    type="text"
-                    placeholder="Buscar cliente por nombre o cédula..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="block w-full border-none bg-transparent px-3 py-2 text-sm leading-6 text-gray-950 placeholder:text-gray-400 focus:ring-0 focus:outline-none dark:text-white dark:placeholder:text-gray-500"
-                />
-                {query && (
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        className="px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                        ✕
-                    </button>
-                )}
-            </div>
+  function handleSelect(client) {
+    onSelect(client);
+    setQuery('');
+    setResults([]);
+    setOpen(false);
+    setNoResults(false);
+  }
 
-            {/* Lista de resultados */}
-            {showResults && results.length > 0 && (
-                <div className="absolute top-full mt-1 w-full z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 border border-gray-200 dark:border-gray-700">
-                    <ul className="max-h-64 overflow-y-auto">
-                        {results.map((cliente) => (
-                            <li key={cliente.id}>
-                                <button
-                                    type="button"
-                                    onClick={() => handleSelectClient(cliente)}
-                                    className="w-full text-left px-4 py-2.5 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition flex flex-col gap-0.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                >
-                                    <span className="font-medium text-gray-950 dark:text-white">{cliente.hacienda_name}</span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {cliente.id_number_type && `Tipo: ${cliente.id_number_type} · `}
-                                        ID: {cliente.id_number}
-                                    </span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+  function handleClear() {
+    onSelect(null);
+  }
 
-            {/* Loading indicator */}
-            {loading && (
-                <div className="absolute top-full mt-1 w-full z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 p-3">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Buscando...</p>
-                </div>
-            )}
+  return (
+    <div className="mb-6">
+      <label className="mb-2 block text-sm font-medium text-gray-950 dark:text-white">
+        Cliente <span className="text-red-500">*</span>
+      </label>
 
-            {/* Sin resultados */}
-            {showResults && results.length === 0 && !loading && (
-                <div className="absolute top-full mt-1 w-full z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 p-3">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No se encontraron clientes.</p>
-                </div>
-            )}
+      {/* Selected client card */}
+      {selectedClient ? (
+        <div className="flex items-center justify-between rounded-lg bg-amber-50 px-4 py-3 ring-1 ring-amber-200 dark:bg-amber-900/20 dark:ring-amber-700">
+          <div>
+            <p className="text-sm font-medium text-gray-950 dark:text-white">{selectedClient.hacienda_name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {selectedClient.id_number_type}: {selectedClient.id_number}
+              {selectedClient.province && ` · ${selectedClient.province}`}
+            </p>
+          </div>
+          <button type="button" onClick={handleClear} className="ml-4 text-xs text-gray-500 hover:text-red-500 dark:text-gray-400">
+            Cambiar
+          </button>
         </div>
-    );
+      ) : (
+        <div ref={containerRef} className="relative">
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Escape' && setOpen(false)}
+            placeholder="Buscar por nombre o cédula..."
+            className="block w-full rounded-lg bg-white px-3 py-2 text-sm text-gray-950 shadow-sm ring-1 ring-black/10 focus:ring-2 focus:ring-amber-600 dark:bg-white/5 dark:text-white dark:ring-white/20"
+          />
+
+          {open && (
+            <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/10 dark:bg-gray-900 dark:ring-white/20">
+              {loading && (
+                <p className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Buscando...</p>
+              )}
+
+              {!loading && results.map(client => (
+                <button
+                  key={client.id}
+                  type="button"
+                  onClick={() => handleSelect(client)}
+                  className="block w-full border-b border-gray-100 px-4 py-2.5 text-left text-sm transition-colors last:border-0 hover:bg-amber-50 dark:border-white/10 dark:hover:bg-amber-900/20"
+                >
+                  <p className="font-medium text-gray-950 dark:text-white">{client.hacienda_name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{client.id_number_type}: {client.id_number}</p>
+                </button>
+              ))}
+
+              {!loading && noResults && (
+                <div className="px-4 py-3">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No se encontró ningún cliente.</p>
+                  <button
+                    type="button"
+                    onClick={() => { setOpen(false); onCreateClick(); }}
+                    className="mt-2 text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400"
+                  >
+                    + Crear cliente
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Always-visible create button when not searching */}
+      {!selectedClient && query.length === 0 && (
+        <button
+          type="button"
+          onClick={onCreateClick}
+          className="mt-2 text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400"
+        >
+          + Crear nuevo cliente
+        </button>
+      )}
+    </div>
+  );
 }

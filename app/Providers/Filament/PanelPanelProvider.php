@@ -47,9 +47,6 @@ class PanelPanelProvider extends PanelProvider
                     ->icon(NavigationGroup::Clientes->getIcon()),
                 FilamentNavigationGroup::make()
                     ->label('Usuarios y Roles'),
-                FilamentNavigationGroup::make()
-                    ->label(NavigationGroup::Configuracion->getLabel())
-                    ->icon(NavigationGroup::Configuracion->getIcon()),
             ])
             ->renderHook(
                 PanelsRenderHook::BODY_START,
@@ -59,10 +56,14 @@ class PanelPanelProvider extends PanelProvider
             )
 
             ->userMenuItems([
-                Action::make('settings')
-                    ->label('Configuración')
+                Action::make('general-settings')
+                    ->label('Configuración General')
                     ->url('/panel/general-settings-page')
-                    ->icon('heroicon-o-cog-6-tooth'),
+                    ->icon('heroicon-o-building-office'),
+                Action::make('hacienda-settings')
+                    ->label('Configuración Hacienda')
+                    ->url('/panel/hacienda-settings-page')
+                    ->icon('heroicon-o-document-text'),
             ])
             ->colors([
                 'primary' => Color::Amber,

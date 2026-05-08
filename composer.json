@@ -5,6 +5,12 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
+     "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:daniv04/hacienda-package.git"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "bezhansalleh/filament-shield": "^4.2",
@@ -12,7 +18,8 @@
         "filament/spatie-laravel-settings-plugin": "^5.4",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
-        "spatie/laravel-settings": "^3.7"
+        "spatie/laravel-settings": "^3.7",
+        "daniv04/hacienda-package": "dev-main"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
