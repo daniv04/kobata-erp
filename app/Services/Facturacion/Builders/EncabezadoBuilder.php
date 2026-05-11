@@ -12,6 +12,7 @@ class EncabezadoBuilder
     {
         return [
             'Encabezado' => [
+                'FechaEmision' => now()->toIso8601String(),
                 'CondicionVenta' => '01',
                 'SituacionComprobante' => '1',
                 'CodigoActividadEmisor' => $this->hacienda->economic_activity_code ?? '',

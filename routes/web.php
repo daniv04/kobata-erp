@@ -7,6 +7,7 @@ use App\Http\Controllers\Hacienda\HaciendaLookupController;
 use App\Http\Controllers\Productos\CategoriesController;
 use App\Http\Controllers\Productos\ProductSearchController;
 use App\Http\Controllers\Shared\LocationController;
+use App\Http\Controllers\Testing\ReceiptsController as TestingReceiptsController;
 use App\Services\HaciendaService;
 use Illuminate\Support\Facades\Route;
 
@@ -31,4 +32,5 @@ Route::middleware(['auth', 'web'])
         Route::get('/ubicacion/distritos', [LocationController::class, 'districts'])->name('ubicacion.distritos');
         Route::get('/ubicacion/barrios', [LocationController::class, 'neighborhoods'])->name('ubicacion.barrios');
         Route::post('/facturacion', [FacturacionController::class, 'store'])->name('facturacion.store');
+        Route::get('/testing/receipts', TestingReceiptsController::class)->name('testing.receipts');
     });

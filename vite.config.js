@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/facturacion.jsx'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/facturacion.jsx', 'resources/js/testing.jsx'],
             refresh: true,
         }),
         tailwindcss(),
@@ -14,7 +14,7 @@ export default defineConfig({
     ],
     server: {
         watch: {
-            ignored: ['**/storage/framework/views/**'],
+            ignored: ['**/storage/framework/views/**', '**/vendor/**', '**/node_modules/**'],
         },
     },
 });
