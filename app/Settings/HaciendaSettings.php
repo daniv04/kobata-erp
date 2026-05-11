@@ -32,6 +32,8 @@ class HaciendaSettings extends Settings
 
     public ?string $address;
 
+    public ?string $economic_activity_code;
+
     public static function group(): string
     {
         return 'hacienda';

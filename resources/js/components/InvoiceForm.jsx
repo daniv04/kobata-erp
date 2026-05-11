@@ -1,14 +1,22 @@
 import { useState } from 'react';
 import ClientSearch from './invoice/ClientSearch';
 import CreateClientModal from './invoice/CreateClientModal';
-import LineItems from './invoice/LineItems';
+import LineItems, { calcLine } from './invoice/LineItems';
 import InvoiceSummary from './invoice/InvoiceSummary';
+import PaymentSection from './invoice/PaymentSection';
+import { ToastContainer } from './Toast';
+import { useToast } from '../hooks/useToast';
 
 export default function InvoiceForm() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [items, setItems] = useState([]);
+  const [currency, setCurrency] = useState('CRC');
+  const [paymentMethods, setPaymentMethods] = useState([{ type: '01', amount: '', othersDescription: '' }]);
   const [submitting, setSubmitting] = useState(false);
+  const { toasts, notify, dismiss } = useToast();
+
+  const invoiceTotal = items.reduce((sum, item) => sum + calcLine(item).total, 0);
 
   function handleClientCreated(client) {
     setSelectedClient(client);
@@ -19,12 +27,12 @@ export default function InvoiceForm() {
     e.preventDefault();
 
     if (!selectedClient) {
-      alert('Selecciona o crea un cliente antes de enviar la factura.');
+      notify({ type: 'warning', title: 'Cliente requerido', body: 'Selecciona o crea un cliente antes de enviar.' });
       return;
     }
 
     if (items.length === 0) {
-      alert('Agrega al menos un producto a la factura.');
+      notify({ type: 'warning', title: 'Sin productos', body: 'Agrega al menos un producto a la factura.' });
       return;
     }
 
@@ -37,20 +45,29 @@ export default function InvoiceForm() {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
         },
-        body: JSON.stringify({ client_id: selectedClient.id, items }),
+        body: JSON.stringify({
+          client_id: selectedClient.id,
+          items,
+          currency,
+          payment_methods: paymentMethods.length === 1
+            ? [{ ...paymentMethods[0], amount: invoiceTotal }]
+            : paymentMethods.map(m => ({ ...m, amount: parseFloat(m.amount) || 0 })),
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(`Error: ${data.message || 'Error al enviar factura'}`);
+        notify({ type: 'danger', title: 'Error al enviar factura', body: data.message || 'Intente de nuevo.' });
       } else {
-        alert('Factura enviada exitosamente');
+        notify({ type: 'success', title: 'Factura enviada', body: 'La factura fue enviada exitosamente.' });
         setSelectedClient(null);
         setItems([]);
+        setCurrency('CRC');
+        setPaymentMethods([{ type: '01', amount: '', othersDescription: '' }]);
       }
     } catch {
-      alert('Error de conexión al enviar la factura');
+      notify({ type: 'danger', title: 'Error de conexión', body: 'No se pudo contactar el servidor.' });
     } finally {
       setSubmitting(false);
     }
@@ -82,13 +99,28 @@ export default function InvoiceForm() {
           <LineItems items={items} onChange={setItems} />
         </FormSection>
 
-        {/* ── Resumen ── */}
+        {/* ── Moneda y pago ── */}
         <FormSection
           number="3"
+          title="Moneda y pago"
+          description="Moneda de la factura y métodos de pago utilizados"
+        >
+          <PaymentSection
+            currency={currency}
+            onCurrencyChange={setCurrency}
+            paymentMethods={paymentMethods}
+            onPaymentMethodsChange={setPaymentMethods}
+            invoiceTotal={invoiceTotal}
+          />
+        </FormSection>
+
+        {/* ── Resumen ── */}
+        <FormSection
+          number="4"
           title="Resumen"
           description="Totales de la factura"
         >
-          <InvoiceSummary items={items} />
+          <InvoiceSummary items={items} currency={currency} />
         </FormSection>
 
         <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700">
@@ -109,6 +141,8 @@ export default function InvoiceForm() {
           onClose={() => setShowCreateModal(false)}
         />
       )}
+
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { calcLine } from './LineItems';
+import { CURRENCIES } from './PaymentSection';
 
-export default function InvoiceSummary({ items }) {
+export default function InvoiceSummary({ items, currency = 'CRC' }) {
+  const selectedCurrency = CURRENCIES.find(c => c.value === currency) ?? CURRENCIES[0];
   if (items.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
@@ -16,7 +18,7 @@ export default function InvoiceSummary({ items }) {
   const totalTax      = lines.reduce((sum, l) => sum + l.taxAmount, 0);
   const total         = lines.reduce((sum, l) => sum + l.total, 0);
 
-  const fmt = n => `₡${n.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+  const fmt = n => `${selectedCurrency.symbol}${n.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
 
   return (
     <div className="ml-auto max-w-xs space-y-2">

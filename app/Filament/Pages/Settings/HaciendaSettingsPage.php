@@ -72,13 +72,17 @@ class HaciendaSettingsPage extends SettingsPage
                         TextInput::make('nombre_comercial')
                             ->label('Nombre comercial')
                             ->nullable(),
+                        TextInput::make('economic_activity_code')
+                            ->label('Código de actividad económica')
+                            ->maxLength(6)
+                            ->nullable(),
                         TextInput::make('registro_fiscal_8707')
                             ->label('Registro Fiscal Bebidas Alcohólicas (Ley 8707)')
                             ->maxLength(12)
                             ->nullable(),
                     ]),
 
-                  Section::make('Ubicación')->columnSpanFull()
+                Section::make('Ubicación')->columnSpanFull()
                     ->schema([
                         Grid::make(2)
                             ->schema([

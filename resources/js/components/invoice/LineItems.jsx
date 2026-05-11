@@ -89,11 +89,14 @@ export default function LineItems({ items, onChange }) {
                     className="w-full rounded-md bg-white px-2 py-1 text-center text-sm ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-amber-600 dark:bg-white/5 dark:text-white dark:ring-white/20"
                   />
 
-                  <input
-                    type="number" min="0" step="0.01" value={item.unit_price}
-                    onChange={e => update(item.product_id, { unit_price: Math.max(0, Number(e.target.value) || 0) })}
-                    className="w-full rounded-md bg-white px-2 py-1 text-right text-sm ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-amber-600 dark:bg-white/5 dark:text-white dark:ring-white/20"
-                  />
+                  <div className="flex items-center rounded-md ring-1 ring-black/10 focus-within:ring-2 focus-within:ring-amber-600 dark:ring-white/20 bg-white dark:bg-white/5">
+                    <span className="pl-2 text-xs text-gray-400 dark:text-gray-500 select-none">₡</span>
+                    <input
+                      type="number" min="0" step="0.01" value={item.unit_price}
+                      onChange={e => update(item.product_id, { unit_price: Math.max(0, Number(e.target.value) || 0) })}
+                      className="w-full rounded-md bg-transparent py-1 pr-2 text-right text-sm focus:outline-none dark:text-white"
+                    />
+                  </div>
 
                   <p className="text-right text-sm text-gray-500 dark:text-gray-400">
                     {item.tax_percentage}%
