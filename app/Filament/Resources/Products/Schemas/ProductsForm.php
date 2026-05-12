@@ -97,12 +97,12 @@ class ProductsForm
                             ->options(
                                 CabysCode::orderBy('code')
                                     ->get()
-                                    ->mapWithKeys(fn (CabysCode $c) => [$c->id => "{$c->code} — {$c->description}"])
+                                    ->mapWithKeys(fn (CabysCode $c) => [$c->code => "{$c->code} — {$c->description}"])
                             )
                             ->searchable()
                             ->live()
                             ->afterStateUpdated(function (Set $set, ?string $state) {
-                                $set('tax_percentage', CabysCode::find($state)?->tax_percentage);
+                                $set('tax_percentage', CabysCode::where('code', $state)->value('tax_percentage'));
                             }),
                         TextInput::make('tax_percentage')
                             ->label('IVA (%)')
