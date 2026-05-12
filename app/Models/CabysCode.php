@@ -14,4 +14,9 @@ class CabysCode extends Model
             'tax_percentage' => 'decimal:2',
         ];
     }
+
+    public static function isService(string $code): bool
+    {
+        return in_array($code[0] ?? '', ['5', '6', '7', '8']);
+    }
 }

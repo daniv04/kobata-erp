@@ -3,13 +3,16 @@
 namespace App\Services\Facturacion\Builders;
 
 use App\Enums\Currency;
+use App\Models\CabysCode;
 
 class ResumenBuilder
 {
     public function build(array $items, string $currency, array $paymentMethods): array
     {
-        $gravadas = 0;
-        $exentas = 0;
+        $servGravados = 0;
+        $servExentos = 0;
+        $mercGravadas = 0;
+        $mercExentas = 0;
         $descuentos = 0;
         $impuesto = 0;
         $desglose = [];
@@ -26,10 +29,12 @@ class ResumenBuilder
             $descuentos += $descuento;
             $impuesto += $taxAmount;
 
+            $isService = CabysCode::isService((string) ($item['cabys_code'] ?? ''));
+
             if ($taxRate > 0) {
-                $gravadas += $montoTotal;
+                $isService ? $servGravados += $montoTotal : $mercGravadas += $montoTotal;
             } else {
-                $exentas += $montoTotal;
+                $isService ? $servExentos += $montoTotal : $mercExentas += $montoTotal;
             }
 
             $ivaCode = $this->ivaCode($taxRate);
@@ -48,7 +53,9 @@ class ResumenBuilder
             );
         }
 
-        $totalVenta = round($gravadas + $exentas, 5);
+        $totalGravado = round($servGravados + $mercGravadas, 5);
+        $totalExento = round($servExentos + $mercExentas, 5);
+        $totalVenta = round($totalGravado + $totalExento, 5);
         $totalVentaNeta = round($totalVenta - $descuentos, 5);
         $totalComprobante = round($totalVentaNeta + $impuesto, 5);
 
@@ -60,16 +67,16 @@ class ResumenBuilder
                     'CodigoMoneda' => $currencyEnum->value,
                     'TipoCambio' => $currencyEnum->exchangeRate(),
                 ],
-                'TotalServGravados' => 0,
-                'TotalServExentos' => 0,
+                'TotalServGravados' => round($servGravados, 5),
+                'TotalServExentos' => round($servExentos, 5),
                 'TotalServExonerado' => 0,
                 'TotalServNoSujeto' => 0,
-                'TotalMercanciasGravadas' => round($gravadas, 5),
-                'TotalMercanciasExentas' => round($exentas, 5),
+                'TotalMercanciasGravadas' => round($mercGravadas, 5),
+                'TotalMercanciasExentas' => round($mercExentas, 5),
                 'TotalMercExonerada' => 0,
                 'TotalMercNoSujeta' => 0,
-                'TotalGravado' => round($gravadas, 5),
-                'TotalExento' => round($exentas, 5),
+                'TotalGravado' => $totalGravado,
+                'TotalExento' => $totalExento,
                 'TotalExonerado' => 0,
                 'TotalNoSujeto' => 0,
                 'TotalVenta' => $totalVenta,

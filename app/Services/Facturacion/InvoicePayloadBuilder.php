@@ -3,6 +3,7 @@
 namespace App\Services\Facturacion;
 
 use App\Models\Client;
+use App\Models\Products;
 use App\Services\Facturacion\Builders\DetalleBuilder;
 use App\Services\Facturacion\Builders\EmisorBuilder;
 use App\Services\Facturacion\Builders\EncabezadoBuilder;
@@ -21,13 +22,26 @@ class InvoicePayloadBuilder
 
     public function build(Client $client, array $items, string $currency, array $paymentMethods): array
     {
+        $enrichedItems = $this->enrichWithCabysCode($items);
+
         return array_merge(
             $this->encabezado->build(),
             ['Emisor' => $this->emisor->build()],
             ['Receptor' => $this->receptor->build($client)],
-            $this->detalle->build($items),
-            $this->resumen->build($items, $currency, $paymentMethods),
+            $this->detalle->build($enrichedItems),
+            $this->resumen->build($enrichedItems, $currency, $paymentMethods),
             ['InformacionReferencia' => []],
+        );
+    }
+
+    private function enrichWithCabysCode(array $items): array
+    {
+        $cabysMap = Products::whereIn('id', array_column($items, 'product_id'))
+            ->pluck('cabys_code', 'id');
+
+        return array_map(
+            fn (array $item) => array_merge($item, ['cabys_code' => $cabysMap[$item['product_id']] ?? '']),
+            $items,
         );
     }
 }
