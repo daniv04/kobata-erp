@@ -40,6 +40,17 @@ class StoreInvoiceRequest extends FormRequest
                 Rule::in(['01', '02', '03', '04', '05', '06', '07', '08', '09', '99']),
             ],
             'items.*.discount_percentage' => ['required_if:items.*.discount_enabled,true', 'nullable', 'numeric', 'min:0', 'max:100'],
+
+            'items.*.exoneracion' => ['sometimes', 'nullable', 'array'],
+            'items.*.exoneracion.tipo_documento' => ['required_with:items.*.exoneracion', 'string', 'size:2',
+                Rule::in(['02', '03', '04', '08', '09', '10', '11', '99']),
+            ],
+            'items.*.exoneracion.tipo_documento_otro' => ['required_if:items.*.exoneracion.tipo_documento,99', 'nullable', 'string', 'min:5', 'max:100'],
+            'items.*.exoneracion.numero_documento' => ['required_with:items.*.exoneracion', 'string', 'min:3', 'max:40'],
+            'items.*.exoneracion.nombre_institucion' => ['required_with:items.*.exoneracion', 'string', 'size:2'],
+            'items.*.exoneracion.nombre_institucion_otros' => ['required_if:items.*.exoneracion.nombre_institucion,99', 'nullable', 'string', 'min:5', 'max:160'],
+            'items.*.exoneracion.fecha_emision' => ['required_with:items.*.exoneracion', 'string'],
+            'items.*.exoneracion.tarifa_exonerada' => ['required_with:items.*.exoneracion', 'numeric', 'min:0', 'max:100'],
         ];
     }
 

@@ -11,8 +11,10 @@ class ResumenBuilder
     {
         $servGravados = 0;
         $servExentos = 0;
+        $servExonerados = 0;
         $mercGravadas = 0;
         $mercExentas = 0;
+        $mercExoneradas = 0;
         $descuentos = 0;
         $impuesto = 0;
         $desglose = [];
@@ -26,15 +28,37 @@ class ResumenBuilder
             $taxRate = (float) ($item['tax_percentage'] ?? 13);
             $taxAmount = round($netSubtotal * ($taxRate / 100), 5);
 
+            $exoneracion = $item['exoneracion'] ?? null;
+            $montoExoneracion = 0;
+
+            if ($exoneracion && $taxRate > 0) {
+                $montoExoneracion = round(((float) $exoneracion['tarifa_exonerada'] / 100) * $netSubtotal, 5);
+            }
+
+            $impuestoNeto = round($taxAmount - $montoExoneracion, 5);
+
             $descuentos += $descuento;
-            $impuesto += $taxAmount;
+            $impuesto += $impuestoNeto;
 
             $isService = CabysCode::isService((string) ($item['cabys_code'] ?? ''));
 
-            if ($taxRate > 0) {
-                $isService ? $servGravados += $montoTotal : $mercGravadas += $montoTotal;
-            } else {
+            if ($taxRate == 0) {
                 $isService ? $servExentos += $montoTotal : $mercExentas += $montoTotal;
+            } elseif ($montoExoneracion > 0) {
+                // Porcentaje de exoneración sobre el total de la línea
+                $porcentajeEx = $taxAmount > 0 ? $montoExoneracion / $taxAmount : 0;
+                $montoGravado = round($montoTotal * (1 - $porcentajeEx), 5);
+                $montoExoneradoLinea = round($montoTotal * $porcentajeEx, 5);
+
+                if ($isService) {
+                    $servGravados += $montoGravado;
+                    $servExonerados += $montoExoneradoLinea;
+                } else {
+                    $mercGravadas += $montoGravado;
+                    $mercExoneradas += $montoExoneradoLinea;
+                }
+            } else {
+                $isService ? $servGravados += $montoTotal : $mercGravadas += $montoTotal;
             }
 
             $ivaCode = $this->ivaCode($taxRate);
@@ -48,14 +72,15 @@ class ResumenBuilder
                 ];
             }
             $desglose[$groupKey]['TotalMontoImpuesto'] = round(
-                $desglose[$groupKey]['TotalMontoImpuesto'] + $taxAmount,
+                $desglose[$groupKey]['TotalMontoImpuesto'] + $impuestoNeto,
                 5
             );
         }
 
         $totalGravado = round($servGravados + $mercGravadas, 5);
         $totalExento = round($servExentos + $mercExentas, 5);
-        $totalVenta = round($totalGravado + $totalExento, 5);
+        $totalExonerado = round($servExonerados + $mercExoneradas, 5);
+        $totalVenta = round($totalGravado + $totalExento + $totalExonerado, 5);
         $totalVentaNeta = round($totalVenta - $descuentos, 5);
         $totalComprobante = round($totalVentaNeta + $impuesto, 5);
 
@@ -69,15 +94,15 @@ class ResumenBuilder
                 ],
                 'TotalServGravados' => round($servGravados, 5),
                 'TotalServExentos' => round($servExentos, 5),
-                'TotalServExonerado' => 0,
+                'TotalServExonerado' => round($servExonerados, 5),
                 'TotalServNoSujeto' => 0,
                 'TotalMercanciasGravadas' => round($mercGravadas, 5),
                 'TotalMercanciasExentas' => round($mercExentas, 5),
-                'TotalMercExonerada' => 0,
+                'TotalMercExonerada' => round($mercExoneradas, 5),
                 'TotalMercNoSujeta' => 0,
                 'TotalGravado' => $totalGravado,
                 'TotalExento' => $totalExento,
-                'TotalExonerado' => 0,
+                'TotalExonerado' => $totalExonerado,
                 'TotalNoSujeto' => 0,
                 'TotalVenta' => $totalVenta,
                 'TotalDescuentos' => round($descuentos, 5),

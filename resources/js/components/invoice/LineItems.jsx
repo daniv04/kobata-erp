@@ -13,17 +13,21 @@ const DISCOUNT_TYPES = [
   { value: '99', label: 'Otros' },
 ];
 
-export function calcLine(item) {
+export function calcLine(item, exoneracion = null) {
   const subtotal        = item.quantity * item.unit_price;
   const discountAmount  = item.discount_enabled
     ? subtotal * ((item.discount_percentage ?? 0) / 100)
     : 0;
   const netSubtotal     = subtotal - discountAmount;
   const taxAmount       = netSubtotal * (item.tax_percentage / 100);
-  return { subtotal, discountAmount, netSubtotal, taxAmount, total: netSubtotal + taxAmount };
+  const exoneracionAmount = exoneracion && item.tax_percentage > 0
+    ? netSubtotal * (exoneracion.tarifa_exonerada / 100)
+    : 0;
+  const impuestoNeto    = taxAmount - exoneracionAmount;
+  return { subtotal, discountAmount, netSubtotal, taxAmount, exoneracionAmount, impuestoNeto, total: netSubtotal + impuestoNeto };
 }
 
-export default function LineItems({ items, onChange }) {
+export default function LineItems({ items, onChange, exoneracion = null }) {
   function handleAdd(product) {
     const exists = items.find(i => i.product_id === product.id);
     if (exists) {
@@ -69,7 +73,7 @@ export default function LineItems({ items, onChange }) {
           </div>
 
           {items.map(item => {
-            const { subtotal, discountAmount, netSubtotal, taxAmount, total } = calcLine(item);
+            const { subtotal, discountAmount, netSubtotal, taxAmount, exoneracionAmount, impuestoNeto, total } = calcLine(item, exoneracion);
             const fmt = n => `₡${n.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
 
             return (
@@ -98,9 +102,12 @@ export default function LineItems({ items, onChange }) {
                     />
                   </div>
 
-                  <p className="text-right text-sm text-gray-500 dark:text-gray-400">
-                    {item.tax_percentage}%
-                  </p>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.tax_percentage}%</p>
+                    {exoneracionAmount > 0 && (
+                      <p className="text-xs text-blue-500 dark:text-blue-400" title="Monto exonerado">-{fmt(exoneracionAmount)}</p>
+                    )}
+                  </div>
 
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-950 dark:text-white">{fmt(total)}</p>

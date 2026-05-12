@@ -24,7 +24,16 @@ class DetalleBuilder
         $subTotal = round($montoTotal - $descuento, 5);
         $taxRate = (float) ($item['tax_percentage'] ?? 13);
         $impuesto = round($subTotal * ($taxRate / 100), 5);
-        $totalLinea = round($subTotal + $impuesto, 5);
+
+        $exoneracion = $item['exoneracion'] ?? null;
+        $montoExoneracion = 0;
+
+        if ($exoneracion && $taxRate > 0) {
+            $montoExoneracion = round(((float) $exoneracion['tarifa_exonerada'] / 100) * $subTotal, 5);
+        }
+
+        $impuestoNeto = round($impuesto - $montoExoneracion, 5);
+        $totalLinea = round($subTotal + $impuestoNeto, 5);
 
         $line = [
             'NumeroLinea' => $lineNumber,
@@ -45,22 +54,53 @@ class DetalleBuilder
 
         $line['SubTotal'] = $subTotal;
         $line['BaseImponible'] = $subTotal;
-        $line['Impuesto'] = [$this->buildImpuesto($taxRate, $subTotal)];
+        $line['Impuesto'] = [$this->buildImpuesto($taxRate, $subTotal, $impuesto, $exoneracion, $montoExoneracion)];
         $line['ImpuestoAsumidoEmisorFabrica'] = 0;
-        $line['ImpuestoNeto'] = $impuesto;
+        $line['ImpuestoNeto'] = $impuestoNeto;
         $line['MontoTotalLinea'] = $totalLinea;
 
         return $line;
     }
 
-    private function buildImpuesto(float $rate, float $base): array
+    private function buildImpuesto(float $rate, float $base, float $monto, ?array $exoneracion, float $montoExoneracion): array
     {
-        return [
+        $impuesto = [
             'Codigo' => '01',
             'CodigoTarifaIVA' => $this->ivaCode($rate),
             'Tarifa' => $rate,
-            'Monto' => round($base * ($rate / 100), 5),
+            'Monto' => $monto,
         ];
+
+        if ($exoneracion && $montoExoneracion > 0) {
+            $exoneracionNode = [
+                'TipoDocumentoEX1' => $exoneracion['tipo_documento'],
+                'NumeroDocumento' => $exoneracion['numero_documento'],
+                'NombreInstitucion' => $exoneracion['nombre_institucion'],
+                'FechaEmisionEX' => $exoneracion['fecha_emision'],
+                'TarifaExonerada' => (float) $exoneracion['tarifa_exonerada'],
+                'MontoExoneracion' => $montoExoneracion,
+            ];
+
+            if (! empty($exoneracion['tipo_documento_otro'])) {
+                $exoneracionNode['TipoDocumentoOTRO'] = $exoneracion['tipo_documento_otro'];
+            }
+
+            if (! empty($exoneracion['articulo'])) {
+                $exoneracionNode['Articulo'] = $exoneracion['articulo'];
+            }
+
+            if (! empty($exoneracion['inciso'])) {
+                $exoneracionNode['Inciso'] = $exoneracion['inciso'];
+            }
+
+            if (! empty($exoneracion['nombre_institucion_otros'])) {
+                $exoneracionNode['NombreInstitucionOTRO'] = $exoneracion['nombre_institucion_otros'];
+            }
+
+            $impuesto['Exoneracion'] = $exoneracionNode;
+        }
+
+        return $impuesto;
     }
 
     private function ivaCode(float $rate): string

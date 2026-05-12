@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Client extends Model
 {
@@ -46,6 +48,16 @@ class Client extends Model
     public function neighborhood(): BelongsTo
     {
         return $this->belongsTo(Neighborhood::class);
+    }
+
+    public function exoneraciones(): HasMany
+    {
+        return $this->hasMany(ClientExoneracion::class);
+    }
+
+    public function activeExoneracion(): HasOne
+    {
+        return $this->hasOne(ClientExoneracion::class)->where('is_active', true)->latest();
     }
 
     protected static function booted(): void

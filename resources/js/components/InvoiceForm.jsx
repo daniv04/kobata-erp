@@ -9,6 +9,7 @@ import { useToast } from '../hooks/useToast';
 
 export default function InvoiceForm() {
   const [selectedClient, setSelectedClient] = useState(null);
+  const [exoneracion, setExoneracion] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [items, setItems] = useState([]);
   const [currency, setCurrency] = useState('CRC');
@@ -16,10 +17,31 @@ export default function InvoiceForm() {
   const [submitting, setSubmitting] = useState(false);
   const { toasts, notify, dismiss } = useToast();
 
-  const invoiceTotal = items.reduce((sum, item) => sum + calcLine(item).total, 0);
+  const invoiceTotal = items.reduce((sum, item) => sum + calcLine(item, exoneracion).total, 0);
+
+  async function handleClientSelect(client) {
+    setSelectedClient(client);
+    setExoneracion(null);
+
+    if (!client) return;
+
+    try {
+      const res = await fetch(`/panel/clientes/${client.id}/exoneracion-activa`, {
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+      });
+      if (res.status === 204) {
+        setExoneracion(null);
+      } else if (res.ok) {
+        const data = await res.json();
+        setExoneracion(data);
+      }
+    } catch {
+      // Sin exoneración si falla la consulta
+    }
+  }
 
   function handleClientCreated(client) {
-    setSelectedClient(client);
+    handleClientSelect(client);
     setShowCreateModal(false);
   }
 
@@ -38,6 +60,11 @@ export default function InvoiceForm() {
 
     setSubmitting(true);
 
+    const itemsPayload = items.map(item => ({
+      ...item,
+      exoneracion: exoneracion && item.tax_percentage > 0 ? exoneracion : null,
+    }));
+
     try {
       const res = await fetch('/panel/facturacion', {
         method: 'POST',
@@ -47,7 +74,7 @@ export default function InvoiceForm() {
         },
         body: JSON.stringify({
           client_id: selectedClient.id,
-          items,
+          items: itemsPayload,
           currency,
           payment_methods: paymentMethods.length === 1
             ? [{ ...paymentMethods[0], amount: invoiceTotal }]
@@ -65,6 +92,7 @@ export default function InvoiceForm() {
       } else {
         notify({ type: 'success', title: 'Factura enviada', body: 'La factura fue enviada exitosamente.' });
         setSelectedClient(null);
+        setExoneracion(null);
         setItems([]);
         setCurrency('CRC');
         setPaymentMethods([{ type: '01', amount: '', othersDescription: '' }]);
@@ -88,9 +116,12 @@ export default function InvoiceForm() {
         >
           <ClientSearch
             selectedClient={selectedClient}
-            onSelect={setSelectedClient}
+            onSelect={handleClientSelect}
             onCreateClick={() => setShowCreateModal(true)}
           />
+          {exoneracion && (
+            <ExoneracionBanner exoneracion={exoneracion} />
+          )}
         </FormSection>
 
         {/* ── Productos ── */}
@@ -99,7 +130,7 @@ export default function InvoiceForm() {
           title="Productos"
           description="Busca y agrega los productos o servicios a facturar"
         >
-          <LineItems items={items} onChange={setItems} />
+          <LineItems items={items} onChange={setItems} exoneracion={exoneracion} />
         </FormSection>
 
         {/* ── Moneda y pago ── */}
@@ -123,7 +154,7 @@ export default function InvoiceForm() {
           title="Resumen"
           description="Totales de la factura"
         >
-          <InvoiceSummary items={items} currency={currency} />
+          <InvoiceSummary items={items} currency={currency} exoneracion={exoneracion} />
         </FormSection>
 
         <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700">
@@ -146,6 +177,24 @@ export default function InvoiceForm() {
       )}
 
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
+    </div>
+  );
+}
+
+function ExoneracionBanner({ exoneracion }) {
+  return (
+    <div className="mt-3 flex items-start gap-3 rounded-lg bg-blue-50 px-4 py-3 ring-1 ring-blue-200 dark:bg-blue-900/20 dark:ring-blue-700">
+      <svg className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clipRule="evenodd" />
+      </svg>
+      <div>
+        <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+          Exoneración activa — Tipo {exoneracion.tipo_documento} · {exoneracion.tarifa_exonerada}% exonerado
+        </p>
+        <p className="text-xs text-blue-600 dark:text-blue-400">
+          N° {exoneracion.numero_documento} · Se aplicará a todas las líneas con IVA
+        </p>
+      </div>
     </div>
   );
 }

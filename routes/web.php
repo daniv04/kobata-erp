@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Clientes\ClientExoneracionController;
 use App\Http\Controllers\Clientes\ClientSearchController;
 use App\Http\Controllers\Clientes\ClientStoreController;
 use App\Http\Controllers\Facturacion\FacturacionController;
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'web'])
     ->group(function () {
         Route::get('/clientes/search', ClientSearchController::class)->name('clientes.search');
         Route::post('/clientes', ClientStoreController::class)->name('clientes.store');
+        Route::get('/clientes/{client}/exoneracion-activa', ClientExoneracionController::class)->name('clientes.exoneracion-activa');
         Route::get('/hacienda/lookup', HaciendaLookupController::class)->name('hacienda.lookup');
         Route::get('/productos/search', ProductSearchController::class)->name('productos.search');
         Route::get('/categorias', CategoriesController::class)->name('categorias.index');

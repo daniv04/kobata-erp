@@ -1,7 +1,7 @@
 import { calcLine } from './LineItems';
 import { CURRENCIES } from './PaymentSection';
 
-export default function InvoiceSummary({ items, currency = 'CRC' }) {
+export default function InvoiceSummary({ items, currency = 'CRC', exoneracion = null }) {
   const selectedCurrency = CURRENCIES.find(c => c.value === currency) ?? CURRENCIES[0];
   if (items.length === 0) {
     return (
@@ -11,12 +11,14 @@ export default function InvoiceSummary({ items, currency = 'CRC' }) {
     );
   }
 
-  const lines         = items.map(calcLine);
-  const subtotal      = lines.reduce((sum, l) => sum + l.subtotal, 0);
-  const totalDiscount = lines.reduce((sum, l) => sum + l.discountAmount, 0);
-  const netSubtotal   = lines.reduce((sum, l) => sum + l.netSubtotal, 0);
-  const totalTax      = lines.reduce((sum, l) => sum + l.taxAmount, 0);
-  const total         = lines.reduce((sum, l) => sum + l.total, 0);
+  const lines              = items.map(item => calcLine(item, exoneracion));
+  const subtotal           = lines.reduce((sum, l) => sum + l.subtotal, 0);
+  const totalDiscount      = lines.reduce((sum, l) => sum + l.discountAmount, 0);
+  const netSubtotal        = lines.reduce((sum, l) => sum + l.netSubtotal, 0);
+  const totalTax           = lines.reduce((sum, l) => sum + l.taxAmount, 0);
+  const totalExoneracion   = lines.reduce((sum, l) => sum + l.exoneracionAmount, 0);
+  const totalImpuestoNeto  = lines.reduce((sum, l) => sum + l.impuestoNeto, 0);
+  const total              = lines.reduce((sum, l) => sum + l.total, 0);
 
   const fmt = n => `${selectedCurrency.symbol}${n.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
 
@@ -37,6 +39,18 @@ export default function InvoiceSummary({ items, currency = 'CRC' }) {
       )}
 
       <Row label="IVA" value={fmt(totalTax)} />
+
+      {totalExoneracion > 0 && (
+        <Row
+          label={`Exoneración (${exoneracion.tarifa_exonerada}%)`}
+          value={`-${fmt(totalExoneracion)}`}
+          className="text-blue-600 dark:text-blue-400"
+        />
+      )}
+
+      {totalExoneracion > 0 && (
+        <Row label="IVA neto" value={fmt(totalImpuestoNeto)} muted />
+      )}
 
       <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
         <Row label="Total" value={fmt(total)} bold />
