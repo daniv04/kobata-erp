@@ -34,12 +34,6 @@ class DetalleBuilder
             'Detalle' => $item['name'],
             'PrecioUnitario' => $item['unit_price'],
             'MontoTotal' => $montoTotal,
-            'SubTotal' => $subTotal,
-            'BaseImponible' => $subTotal,
-            'ImpuestoAsumidoEmisorFabrica' => 0,
-            'ImpuestoNeto' => $impuesto,
-            'MontoTotalLinea' => $totalLinea,
-            'Impuesto' => [$this->buildImpuesto($taxRate, $subTotal)],
         ];
 
         if ($descuento > 0) {
@@ -48,6 +42,13 @@ class DetalleBuilder
                 'CodigoDescuento' => $item['discount_type'] ?? '07',
             ]];
         }
+
+        $line['SubTotal'] = $subTotal;
+        $line['BaseImponible'] = $subTotal;
+        $line['Impuesto'] = [$this->buildImpuesto($taxRate, $subTotal)];
+        $line['ImpuestoAsumidoEmisorFabrica'] = 0;
+        $line['ImpuestoNeto'] = $impuesto;
+        $line['MontoTotalLinea'] = $totalLinea;
 
         return $line;
     }
