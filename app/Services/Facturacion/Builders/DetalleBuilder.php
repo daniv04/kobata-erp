@@ -2,12 +2,18 @@
 
 namespace App\Services\Facturacion\Builders;
 
+use App\Models\Products;
+use Illuminate\Support\Collection;
+
 class DetalleBuilder
 {
     public function build(array $items): array
     {
+        $cabysMap = Products::whereIn('id', array_column($items, 'product_id'))
+            ->pluck('cabys_code', 'id');
+
         $lines = array_values(array_map(
-            fn (array $item, int $index) => $this->buildLine($item, $index + 1),
+            fn (array $item, int $index) => $this->buildLine($item, $index + 1, $cabysMap),
             $items,
             array_keys($items),
         ));
@@ -15,7 +21,7 @@ class DetalleBuilder
         return ['DetalleServicio' => ['LineaDetalle' => $lines]];
     }
 
-    private function buildLine(array $item, int $lineNumber): array
+    private function buildLine(array $item, int $lineNumber, Collection $cabysMap): array
     {
         $montoTotal = round($item['quantity'] * $item['unit_price'], 5);
         $descuento = $item['discount_enabled']
@@ -28,7 +34,7 @@ class DetalleBuilder
 
         $line = [
             'NumeroLinea' => $lineNumber,
-            'CodigoCABYS' => str_pad((string) ($item['cabys_code'] ?? ''), 13, '0', STR_PAD_LEFT),
+            'CodigoCABYS' => str_pad((string) ($cabysMap[$item['product_id']] ?? ''), 13, '0', STR_PAD_LEFT),
             'Cantidad' => $item['quantity'],
             'UnidadMedida' => 'Unid',
             'Detalle' => $item['name'],
