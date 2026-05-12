@@ -18,7 +18,6 @@ class FacturacionService
     {
         $client = $this->resolveClient($clientId);
         $payload = $this->buildPayload($client, $items, $currency, $paymentMethods);
-        dd($payload);
 
         return $this->sendToHacienda($payload, $clientId);
     }
@@ -46,19 +45,42 @@ class FacturacionService
         }
     }
 
-    private function sendToHacienda(array $payload, int $clientId): mixed
+    private function sendToHacienda(array $payload, int $clientId): array
     {
         try {
-            return Facturacion::createAndSend('FE', $payload);
+            $result = Facturacion::createAndSend('FE', $payload);
         } catch (\Throwable $e) {
-            Log::error('Error al enviar factura a Hacienda', [
+            Log::error('Error inesperado al contactar Hacienda', [
                 'client_id' => $clientId,
-                'payload' => $payload,
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             throw FacturacionException::haciendaNoDisponible($e);
         }
+
+        if (! ($result['success'] ?? false)) {
+            $statusCode = $result['status_code'] ?? 500;
+            $errors = $result['errors'] ?? [];
+
+            if ($statusCode === 422 || ! empty($errors)) {
+                Log::warning('Errores de validación al enviar factura a Hacienda', [
+                    'client_id' => $clientId,
+                    'errors' => $errors,
+                ]);
+
+                throw FacturacionException::validacionFallida($errors);
+            }
+
+            Log::error('Error del paquete Hacienda', [
+                'client_id' => $clientId,
+                'message' => $result['message'] ?? 'Error desconocido',
+                'status_code' => $statusCode,
+            ]);
+
+            throw FacturacionException::haciendaNoDisponible();
+        }
+
+        return $result;
     }
 }

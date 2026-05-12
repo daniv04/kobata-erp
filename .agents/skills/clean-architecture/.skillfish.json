@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "clean-architecture",
+  "owner": "lobbi-docs",
+  "repo": "claude",
+  "path": "plugins/jira-orchestrator/skills/clean-architecture",
+  "branch": "main",
+  "sha": "55e9c43a8895acb2d5a0bd696764219f025f17ca",
+  "source": "manual"
+}

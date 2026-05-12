@@ -24,10 +24,18 @@ class FacturacionController extends Controller
             return response()->json($response);
 
         } catch (FacturacionException $e) {
-            return response()->json([
+            $body = [
                 'success' => false,
                 'message' => $e->getMessage(),
-            ], 422);
+            ];
+
+            if ($e->hasValidationErrors()) {
+                $body['errors'] = $e->getValidationErrors();
+            }
+
+            $status = $e->hasValidationErrors() ? 422 : 503;
+
+            return response()->json($body, $status);
 
         } catch (\Throwable $e) {
             Log::critical('Error inesperado en FacturacionController@store', [

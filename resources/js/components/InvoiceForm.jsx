@@ -58,7 +58,10 @@ export default function InvoiceForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        notify({ type: 'danger', title: 'Error al enviar factura', body: data.message || 'Intente de nuevo.' });
+        const errorBody = data.errors
+          ? Object.values(data.errors).flat().join('\n')
+          : data.message || 'Intente de nuevo.';
+        notify({ type: 'danger', title: 'Error al enviar factura', body: errorBody });
       } else {
         notify({ type: 'success', title: 'Factura enviada', body: 'La factura fue enviada exitosamente.' });
         setSelectedClient(null);

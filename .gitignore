@@ -25,3 +25,4 @@ Thumbs.db
 .env.example
 composer.lock
 /lang
+storage/certificates/

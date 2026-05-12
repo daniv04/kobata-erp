@@ -12,6 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('
+                CREATE UNIQUE INDEX IF NOT EXISTS warehouse_stocks_product_variant_warehouse_unique
+                ON warehouse_stocks (product_id, variant_id, warehouse_id)
+            ');
+
+            return;
+        }
+
         // Consolidate duplicate rows: keep the lowest id per group,
         // sum quantities and reserved_quantities, delete the rest.
         DB::statement('

@@ -17,6 +17,7 @@ class EmisorBuilder
 
     public function build(): array
     {
+
         $emisor = [
             'Nombre' => $this->hacienda->company_name,
             'Identificacion' => [
